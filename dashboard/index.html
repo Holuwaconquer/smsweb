@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Basedsms</title>
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+</head>
+<body>
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <div class="mobile-time" id="mobileTime">10:04</div>
+        <div class="mobile-icons">
+            <span>🎧</span>
+            <span>📶</span>
+            <span>🔋</span>
+        </div>
+    </div>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-left">
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="logo">
+                <div class="logo-icon">B</div>
+                <span>Basedsms</span>
+            </div>
+            <div class="nav-links">
+                <a href="#" class="nav-link active">🏠 Dashboard</a>
+                <a href="usa-numbers.html" class="nav-link">📱 USA Numbers</a>
+                <a href="all-countries.html" class="nav-link">🌍 All Countries</a>
+                <a href="history.html" class="nav-link">🕐 History</a>
+            </div>
+        </div>
+        <div class="nav-right">
+            <div class="balance-badge" id="balanceDisplay">₦0.00</div>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-section">
+            <div class="sidebar-title">Menu</div>
+            <a href="#" class="sidebar-link active">
+                <span class="sidebar-icon">🏠</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="usa-numbers.html" class="sidebar-link">
+                <span class="sidebar-icon">📱</span>
+                <span>USA Numbers</span>
+            </a>
+            <a href="all-countries.html" class="sidebar-link">
+                <span class="sidebar-icon">🌍</span>
+                <span>All Countries</span>
+            </a>
+            <a href="history.html" class="sidebar-link">
+                <span class="sidebar-icon">🕐</span>
+                <span>History</span>
+            </a>
+            <a href="wallet.html" class="sidebar-link">
+                <span class="sidebar-icon">💰</span>
+                <span>Wallet</span>
+            </a>
+            <a href="profile.html" class="sidebar-link">
+                <span class="sidebar-icon">👤</span>
+                <span>Profile</span>
+            </a>
+            <a href="#" class="sidebar-link" id="contactLink">
+                <span class="sidebar-icon">📞</span>
+                <span>Contact Us</span>
+            </a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-title">Account</div>
+            <a href="#" class="sidebar-link" id="logoutBtn">
+                <span class="sidebar-icon">🚪</span>
+                <span>Log Out</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1>Welcome back!</h1>
+            <p>Here's what's happening with your account today</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Balance</span>
+                    <div class="stat-icon" style="background: #e0f7f4; color: #00d4aa;">📞</div>
+                </div>
+                <div class="stat-value" id="statsBalance">₦0.00</div>
+                <div class="stat-change positive">
+                    <span>↗</span>
+                    <span>Ready to use</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Messages Received</span>
+                    <div class="stat-icon" style="background: #e3f2fd; color: #2196f3;">💬</div>
+                </div>
+                <div class="stat-value">0</div>
+                <div class="stat-change">
+                    <span>—</span>
+                    <span>No messages yet</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Total Spent</span>
+                    <div class="stat-icon" style="background: #fce4ec; color: #e91e63;">📊</div>
+                </div>
+                <div class="stat-value">₦0</div>
+                <div class="stat-change">
+                    <span>—</span>
+                    <span>Start using services</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Access -->
+        <div class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Quick Access</h2>
+            </div>
+            <div class="quick-access">
+                <div class="access-card" onclick="window.location.href='usa-numbers.html'">
+                    <div class="access-icon">📱</div>
+                    <h3>USA Numbers</h3>
+                    <p>Get US phone numbers for verification</p>
+                </div>
+
+                <div class="access-card" onclick="window.location.href='all-countries.html'">
+                    <div class="access-icon">🌍</div>
+                    <h3>All Countries</h3>
+                    <p>Browse numbers from 50+ countries</p>
+                </div>
+
+                <div class="access-card" onclick="window.location.href='history.html'">
+                    <div class="access-icon">🕐</div>
+                    <h3>History</h3>
+                    <p>View your usage history</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Info -->
+        <div class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Global Coverage</h2>
+            </div>
+            <div style="background: linear-gradient(135deg, #e0f7f4, #ccf3ed); padding: 30px; border-radius: 12px;">
+                <h3 style="margin-bottom: 15px;">📍 Numbers from 50+ countries available</h3>
+                <p style="margin-bottom: 10px; color: #666;">• Pricing varies by country and service</p>
+                <p style="margin-bottom: 10px; color: #666;">• Both VoIP and Non-VoIP options</p>
+                <p style="margin-bottom: 10px; color: #666;">• Real-time SMS delivery</p>
+                <p style="color: #666;">• Multiple services supported per number</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Chat Button -->
+    <div class="chat-button">
+        <svg viewBox="0 0 24 24">
+            <path fill="white" d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 3 .97 4.29L2 22l5.71-.97C9 21.64 10.46 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18c-1.42 0-2.76-.3-3.97-.85l-.28-.14-2.9.49.49-2.9-.14-.28C4.3 14.76 4 13.42 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z"/>
+        </svg>
+    </div>
+
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Paystack Inline JS -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    
+    <!-- Configuration and Scripts -->
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/dashboard.js"></script>
+    <script src="../js/chatbot.js"></script>
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In / Sign Up - Basedsms</title>
+    <link rel="stylesheet" href="css/auth.css" />
+    <link rel="stylesheet" href="css/chatbot.css" />
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="header">
+      <button class="back-button" onclick="window.location.href='index.html'">
+        <span>←</span>
+      </button>
+      <div class="logo">
+        <div class="logo-icon">B</div>
+        <span>Basedsms</span>
+      </div>
+      <button class="theme-toggle" id="themeToggle">🌙</button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="auth-card">
+        <!-- Tab Navigation -->
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-tab="login">Sign In</button>
+          <button class="auth-tab" data-tab="signup">Sign Up</button>
+        </div>
+
+        <!-- Login Tab Content -->
+        <div id="login-tab" class="tab-content active">
+          <h1 class="card-title">Welcome Back</h1>
+          <p class="card-subtitle">Sign in to continue to your account</p>
+
+          <form id="loginForm">
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <div class="input-wrapper">
+                <span class="input-icon">✉️</span>
+                <input
+                  type="email"
+                  class="form-input"
+                  placeholder="you@example.com"
+                  id="loginEmail"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <div class="input-wrapper">
+                <span class="input-icon">🔒</span>
+                <input
+                  type="password"
+                  class="form-input"
+                  placeholder="••••••••"
+                  id="loginPassword"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-options">
+              <div class="checkbox-wrapper">
+                <input type="checkbox" id="remember" />
+                <label for="remember">Remember me</label>
+              </div>
+              <a href="#" class="forgot-link">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="btn-primary" id="signInBtn">
+              Sign In
+            </button>
+          </form>
+        </div>
+
+        <!-- Signup Tab Content -->
+        <div id="signup-tab" class="tab-content">
+          <h1 class="card-title">Create Account</h1>
+          <p class="card-subtitle">Sign up to get started with Basedsms</p>
+
+          <div class="success-message" id="successMessage">
+            Account created successfully! 🎉
+          </div>
+
+          <form id="signupForm">
+            <div class="form-group">
+              <label class="form-label">Username</label>
+              <div class="input-wrapper">
+                <span class="input-icon">👤</span>
+                <input
+                  type="text"
+                  class="form-input"
+                  placeholder="John Doe"
+                  id="username"
+                  required
+                  minlength="3"
+                />
+              </div>
+              <span class="error-message" id="usernameError"
+                >Username must be at least 3 characters</span
+              >
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <div class="input-wrapper">
+                <span class="input-icon">✉️</span>
+                <input
+                  type="email"
+                  class="form-input"
+                  placeholder="you@example.com"
+                  id="signupEmail"
+                  required
+                />
+              </div>
+              <span class="error-message" id="emailError"
+                >Please enter a valid email address</span
+              >
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <div class="input-wrapper">
+                <span class="input-icon">🔒</span>
+                <input
+                  type="password"
+                  class="form-input"
+                  placeholder="••••••••"
+                  id="signupPassword"
+                  required
+                  minlength="6"
+                />
+              </div>
+              <div class="password-strength" id="passwordStrength">
+                <div class="password-strength-bar" id="strengthBar"></div>
+              </div>
+              <span class="error-message" id="passwordError"
+                >Password must be at least 6 characters</span
+              >
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Confirm Password</label>
+              <div class="input-wrapper">
+                <span class="input-icon">🔒</span>
+                <input
+                  type="password"
+                  class="form-input"
+                  placeholder="••••••••"
+                  id="confirmPassword"
+                  required
+                />
+              </div>
+              <span class="error-message" id="confirmError"
+                >Passwords do not match</span
+              >
+            </div>
+
+            <button type="submit" class="btn-primary" id="signupBtn">
+              Create Account
+            </button>
+          </form>
+        </div>
+      </div>
+    </main>
+
+    <!-- Chat Button -->
+    <div class="chat-button">
+      <svg viewBox="0 0 24 24">
+        <path
+          d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 3 .97 4.29L2 22l5.71-.97C9 21.64 10.46 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18c-1.42 0-2.76-.3-3.97-.85l-.28-.14-2.9.49.49-2.9-.14-.28C4.3 14.76 4 13.42 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z"
+        />
+      </svg>
+    </div>
+
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/chatbot.js"></script>
+  </body>
+</html>
