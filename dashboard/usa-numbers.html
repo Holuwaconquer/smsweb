@@ -6,16 +6,24 @@
     <title>Buy USA Numbers - BasedSMS</title>
     <link rel="stylesheet" href="../css/dashboard.css" />
     <style>
-      .numbers-container {
+      .service-grid {
         display: grid;
-        gap: 20px;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 25px;
+        margin-bottom: 30px;
       }
 
-      .service-section {
+      .service-card {
         background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
         padding: 25px;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+      }
+
+      .service-card:hover {
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transform: translateY(-5px);
       }
 
       .service-header {
@@ -23,163 +31,188 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
-        border-bottom: 2px solid #f0f0f0;
         padding-bottom: 15px;
+        border-bottom: 2px solid #e0e0e0;
       }
 
       .service-name {
-        font-size: 24px;
+        font-size: 20px;
         font-weight: 600;
         color: #333;
       }
 
       .service-price {
-        background: #e8f5e9;
-        padding: 10px 20px;
-        border-radius: 5px;
-        font-weight: 600;
-        color: #4caf50;
-      }
-
-      .controls {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-      }
-
-      .btn-search {
-        background: #2196f3;
+        background: linear-gradient(135deg, #00d4aa, #00b894);
         color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
+        padding: 8px 16px;
+        border-radius: 20px;
         font-weight: 600;
-        transition: background 0.3s;
-      }
-
-      .btn-search:hover {
-        background: #1976d2;
+        font-size: 14px;
       }
 
       .numbers-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 15px;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
         margin-bottom: 20px;
+        min-height: 50px;
       }
 
       .number-card {
-        background: #f9f9f9;
+        background: #f8f9fa;
+        border: 2px solid #e0e0e0;
         padding: 15px;
         border-radius: 8px;
-        border: 2px solid #e0e0e0;
+        text-align: center;
         transition: all 0.3s;
         cursor: pointer;
       }
 
       .number-card:hover {
-        border-color: #2196f3;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+        border-color: #00d4aa;
+        background: #e0f7f4;
       }
 
       .number-text {
-        font-size: 18px;
-        font-weight: bold;
-        color: #2196f3;
-        margin-bottom: 10px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+        font-family: "Courier New", monospace;
       }
 
       .number-status {
         font-size: 12px;
-        color: #666;
+        color: #999;
         margin-bottom: 10px;
       }
 
       .btn-buy {
-        background: #4caf50;
-        color: white;
-        padding: 8px 12px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: 600;
         width: 100%;
-        transition: background 0.3s;
+        padding: 8px;
+        background: linear-gradient(135deg, #00d4aa, #00b894);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        transition: all 0.3s;
       }
 
       .btn-buy:hover {
-        background: #45a049;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 212, 170, 0.3);
+      }
+
+      .btn-search {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #00d4aa, #00b894);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        margin-bottom: 15px;
+        transition: all 0.3s;
+      }
+
+      .btn-search:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 212, 170, 0.3);
       }
 
       .active-numbers {
-        margin-top: 30px;
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid #e0e0e0;
       }
 
       .active-numbers h3 {
-        font-size: 20px;
+        font-size: 16px;
+        font-weight: 600;
         margin-bottom: 15px;
         color: #333;
+      }
+
+      .table-container {
+        overflow-x: auto;
       }
 
       .number-table {
         width: 100%;
         border-collapse: collapse;
-        background: white;
+      }
+
+      .number-table thead {
+        background: #f8f9fa;
       }
 
       .number-table th {
-        background: #f5f5f5;
-        padding: 12px;
+        padding: 12px 15px;
         text-align: left;
         font-weight: 600;
-        border-bottom: 2px solid #ddd;
+        color: #666;
+        font-size: 12px;
+        text-transform: uppercase;
+        border-bottom: 2px solid #e0e0e0;
       }
 
       .number-table td {
-        padding: 12px;
-        border-bottom: 1px solid #eee;
+        padding: 12px 15px;
+        border-bottom: 1px solid #e0e0e0;
+        color: #333;
+        font-size: 14px;
       }
 
       .status-badge {
         display: inline-block;
         padding: 4px 12px;
-        border-radius: 20px;
+        border-radius: 12px;
         font-size: 12px;
-        font-weight: 600;
+        font-weight: 500;
       }
 
       .status-active {
-        background: #e8f5e9;
-        color: #2e7d32;
+        background: #e0f7f4;
+        color: #00d4aa;
       }
 
       .status-expired {
         background: #ffebee;
-        color: #c62828;
+        color: #ff4757;
+      }
+
+      .btn-copy,
+      .btn-delete {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        transition: all 0.3s;
       }
 
       .btn-copy {
+        background: #e3f2fd;
+        color: #2196f3;
+        margin-right: 8px;
+      }
+
+      .btn-copy:hover {
         background: #2196f3;
         color: white;
-        padding: 6px 10px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 12px;
       }
 
       .btn-delete {
-        background: #f44336;
+        background: #ffebee;
+        color: #ff4757;
+      }
+
+      .btn-delete:hover {
+        background: #ff4757;
         color: white;
-        padding: 6px 10px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 12px;
-        margin-left: 5px;
       }
 
       .empty-state {
@@ -200,7 +233,7 @@
 
       .spinner {
         border: 4px solid #f3f3f3;
-        border-top: 4px solid #2196f3;
+        border-top: 4px solid #00d4aa;
         border-radius: 50%;
         width: 40px;
         height: 40px;
@@ -218,196 +251,216 @@
       }
 
       .balance-warning {
-        background: #fff3cd;
-        border: 1px solid #ffc107;
-        padding: 12px;
-        border-radius: 5px;
-        margin-bottom: 20px;
-        color: #856404;
+        background: #fff3e0;
+        border: 1px solid #ffb74d;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        color: #e65100;
+        font-weight: 500;
+      }
+
+      @media (max-width: 768px) {
+        .service-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .numbers-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
       }
     </style>
   </head>
   <body>
-    <div class="dashboard-wrapper">
-      <!-- Sidebar -->
-      <aside class="sidebar">
-        <div class="logo">BasedSMS</div>
-        <nav class="nav-menu">
-          <a href="index.html" class="nav-link">Dashboard</a>
-          <a href="usa-numbers.html" class="nav-link active">Buy USA Numbers</a>
-          <a href="all-countries.html" class="nav-link"
-            >International Numbers</a
-          >
-          <a href="logs.html" class="nav-link">Buy Logs</a>
-          <a href="booster.html" class="nav-link">Social Booster</a>
-          <a href="inbox.html" class="nav-link">SMS Inbox</a>
-          <a href="history.html" class="nav-link">History</a>
-          <a href="wallet.html" class="nav-link">Wallet</a>
-          <a href="profile.html" class="nav-link">Profile</a>
-        </nav>
-        <div class="sidebar-footer">
-          <button id="logoutBtn" class="btn-logout">Logout</button>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+      <div class="nav-left">
+        <div class="hamburger" id="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
-      </aside>
+        <div class="logo">
+          <div class="logo-icon">B</div>
+          BasedSMS
+        </div>
+      </div>
+      <div class="nav-right">
+        <div class="balance-badge" id="balanceDisplay">₦0.00</div>
+      </div>
+    </nav>
 
-      <!-- Main Content -->
-      <main class="main-content">
-        <header class="top-bar">
-          <div class="hamburger" id="hamburger">
-            <span></span>
-            <span></span>
-            <span></span>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <a href="index.html" class="sidebar-link">📊 Dashboard</a>
+        <a href="usa-numbers.html" class="sidebar-link active"
+          >🇺🇸 Buy USA Numbers</a
+        >
+        <a href="all-countries.html" class="sidebar-link"
+          >🌍 International Numbers</a
+        >
+        <a href="logs.html" class="sidebar-link">📝 Buy Logs</a>
+        <a href="booster.html" class="sidebar-link">📈 Social Booster</a>
+        <a href="inbox.html" class="sidebar-link">📬 SMS Inbox</a>
+        <a href="history.html" class="sidebar-link">📋 History</a>
+      </div>
+      <div class="sidebar-section">
+        <a href="wallet.html" class="sidebar-link">💰 Wallet</a>
+        <a href="profile.html" class="sidebar-link">👤 Profile</a>
+      </div>
+      <div class="sidebar-section" id="adminSection" style="display: none">
+        <a
+          href="../admin/index.html"
+          class="sidebar-link"
+          style="
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: white;
+            border-radius: 8px;
+          "
+          >⚙️ Admin Panel</a
+        >
+      </div>
+      <div class="sidebar-section" style="margin-top: auto">
+        <button
+          id="logoutBtn"
+          class="btn btn-danger"
+          style="width: 100%; padding: 12px; cursor: pointer"
+        >
+          🚪 Logout
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="page-header">
+        <h1>Buy USA Phone Numbers</h1>
+        <p>Purchase verified USA phone numbers for SMS verification services</p>
+      </div>
+
+      <div
+        id="balanceWarning"
+        class="balance-warning"
+        style="display: none"
+      ></div>
+
+      <div class="service-grid">
+        <!-- WhatsApp Service -->
+        <div class="service-card">
+          <div class="service-header">
+            <div class="service-name">📱 WhatsApp</div>
+            <div class="service-price" data-price="200">₦200</div>
           </div>
-          <div class="header-right">
-            <div class="balance-display">
-              Balance: <strong id="balanceDisplay">₦0.00</strong>
-            </div>
-            <div class="user-menu">
-              <span id="username">User</span>
-            </div>
+          <button class="btn-search" onclick="searchNumbers('whatsapp')">
+            Search Available Numbers
+          </button>
+          <div class="loader" id="loader-whatsapp">
+            <div class="spinner"></div>
           </div>
-        </header>
-
-        <div class="content">
-          <h1>Buy USA Phone Numbers</h1>
-          <p>Purchase USA phone numbers for SMS verification services</p>
-
-          <div
-            id="balanceWarning"
-            class="balance-warning"
-            style="display: none"
-          ></div>
-
-          <div class="numbers-container">
-            <!-- WhatsApp Service -->
-            <div class="service-section">
-              <div class="service-header">
-                <span class="service-name">WhatsApp</span>
-                <span class="service-price" data-price="200">₦200</span>
-              </div>
-              <div class="controls">
-                <button class="btn-search" onclick="searchNumbers('whatsapp')">
-                  Search Available Numbers
-                </button>
-              </div>
-              <div class="loader" id="loader-whatsapp">
-                <div class="spinner"></div>
-              </div>
-              <div class="numbers-grid" id="numbers-whatsapp"></div>
-              <div class="active-numbers">
-                <h3>Your WhatsApp Numbers</h3>
-                <div id="active-whatsapp"></div>
-              </div>
-            </div>
-
-            <!-- Telegram Service -->
-            <div class="service-section">
-              <div class="service-header">
-                <span class="service-name">Telegram</span>
-                <span class="service-price" data-price="150">₦150</span>
-              </div>
-              <div class="controls">
-                <button class="btn-search" onclick="searchNumbers('telegram')">
-                  Search Available Numbers
-                </button>
-              </div>
-              <div class="loader" id="loader-telegram">
-                <div class="spinner"></div>
-              </div>
-              <div class="numbers-grid" id="numbers-telegram"></div>
-              <div class="active-numbers">
-                <h3>Your Telegram Numbers</h3>
-                <div id="active-telegram"></div>
-              </div>
-            </div>
-
-            <!-- Instagram Service -->
-            <div class="service-section">
-              <div class="service-header">
-                <span class="service-name">Instagram</span>
-                <span class="service-price" data-price="180">₦180</span>
-              </div>
-              <div class="controls">
-                <button class="btn-search" onclick="searchNumbers('instagram')">
-                  Search Available Numbers
-                </button>
-              </div>
-              <div class="loader" id="loader-instagram">
-                <div class="spinner"></div>
-              </div>
-              <div class="numbers-grid" id="numbers-instagram"></div>
-              <div class="active-numbers">
-                <h3>Your Instagram Numbers</h3>
-                <div id="active-instagram"></div>
-              </div>
-            </div>
-
-            <!-- Facebook Service -->
-            <div class="service-section">
-              <div class="service-header">
-                <span class="service-name">Facebook</span>
-                <span class="service-price" data-price="170">₦170</span>
-              </div>
-              <div class="controls">
-                <button class="btn-search" onclick="searchNumbers('facebook')">
-                  Search Available Numbers
-                </button>
-              </div>
-              <div class="loader" id="loader-facebook">
-                <div class="spinner"></div>
-              </div>
-              <div class="numbers-grid" id="numbers-facebook"></div>
-              <div class="active-numbers">
-                <h3>Your Facebook Numbers</h3>
-                <div id="active-facebook"></div>
-              </div>
-            </div>
-
-            <!-- Twitter Service -->
-            <div class="service-section">
-              <div class="service-header">
-                <span class="service-name">Twitter</span>
-                <span class="service-price" data-price="160">₦160</span>
-              </div>
-              <div class="controls">
-                <button class="btn-search" onclick="searchNumbers('twitter')">
-                  Search Available Numbers
-                </button>
-              </div>
-              <div class="loader" id="loader-twitter">
-                <div class="spinner"></div>
-              </div>
-              <div class="numbers-grid" id="numbers-twitter"></div>
-              <div class="active-numbers">
-                <h3>Your Twitter Numbers</h3>
-                <div id="active-twitter"></div>
-              </div>
-            </div>
-
-            <!-- Google Service -->
-            <div class="service-section">
-              <div class="service-header">
-                <span class="service-name">Google</span>
-                <span class="service-price" data-price="190">₦190</span>
-              </div>
-              <div class="controls">
-                <button class="btn-search" onclick="searchNumbers('google')">
-                  Search Available Numbers
-                </button>
-              </div>
-              <div class="loader" id="loader-google">
-                <div class="spinner"></div>
-              </div>
-              <div class="numbers-grid" id="numbers-google"></div>
-              <div class="active-numbers">
-                <h3>Your Google Numbers</h3>
-                <div id="active-google"></div>
-              </div>
-            </div>
+          <div class="numbers-grid" id="numbers-whatsapp"></div>
+          <div class="active-numbers">
+            <h3>Your WhatsApp Numbers</h3>
+            <div id="active-whatsapp"></div>
           </div>
         </div>
-      </main>
-    </div>
+
+        <!-- Telegram Service -->
+        <div class="service-card">
+          <div class="service-header">
+            <div class="service-name">✈️ Telegram</div>
+            <div class="service-price" data-price="150">₦150</div>
+          </div>
+          <button class="btn-search" onclick="searchNumbers('telegram')">
+            Search Available Numbers
+          </button>
+          <div class="loader" id="loader-telegram">
+            <div class="spinner"></div>
+          </div>
+          <div class="numbers-grid" id="numbers-telegram"></div>
+          <div class="active-numbers">
+            <h3>Your Telegram Numbers</h3>
+            <div id="active-telegram"></div>
+          </div>
+        </div>
+
+        <!-- Instagram Service -->
+        <div class="service-card">
+          <div class="service-header">
+            <div class="service-name">📷 Instagram</div>
+            <div class="service-price" data-price="180">₦180</div>
+          </div>
+          <button class="btn-search" onclick="searchNumbers('instagram')">
+            Search Available Numbers
+          </button>
+          <div class="loader" id="loader-instagram">
+            <div class="spinner"></div>
+          </div>
+          <div class="numbers-grid" id="numbers-instagram"></div>
+          <div class="active-numbers">
+            <h3>Your Instagram Numbers</h3>
+            <div id="active-instagram"></div>
+          </div>
+        </div>
+
+        <!-- Facebook Service -->
+        <div class="service-card">
+          <div class="service-header">
+            <div class="service-name">👥 Facebook</div>
+            <div class="service-price" data-price="170">₦170</div>
+          </div>
+          <button class="btn-search" onclick="searchNumbers('facebook')">
+            Search Available Numbers
+          </button>
+          <div class="loader" id="loader-facebook">
+            <div class="spinner"></div>
+          </div>
+          <div class="numbers-grid" id="numbers-facebook"></div>
+          <div class="active-numbers">
+            <h3>Your Facebook Numbers</h3>
+            <div id="active-facebook"></div>
+          </div>
+        </div>
+
+        <!-- Twitter Service -->
+        <div class="service-card">
+          <div class="service-header">
+            <div class="service-name">🐦 Twitter</div>
+            <div class="service-price" data-price="160">₦160</div>
+          </div>
+          <button class="btn-search" onclick="searchNumbers('twitter')">
+            Search Available Numbers
+          </button>
+          <div class="loader" id="loader-twitter">
+            <div class="spinner"></div>
+          </div>
+          <div class="numbers-grid" id="numbers-twitter"></div>
+          <div class="active-numbers">
+            <h3>Your Twitter Numbers</h3>
+            <div id="active-twitter"></div>
+          </div>
+        </div>
+
+        <!-- Google Service -->
+        <div class="service-card">
+          <div class="service-header">
+            <div class="service-name">🔍 Google</div>
+            <div class="service-price" data-price="190">₦190</div>
+          </div>
+          <button class="btn-search" onclick="searchNumbers('google')">
+            Search Available Numbers
+          </button>
+          <div class="loader" id="loader-google">
+            <div class="spinner"></div>
+          </div>
+          <div class="numbers-grid" id="numbers-google"></div>
+          <div class="active-numbers">
+            <h3>Your Google Numbers</h3>
+            <div id="active-google"></div>
+          </div>
+        </div>
+      </div>
+    </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-config.js"></script>
@@ -432,13 +485,82 @@
       };
 
       document.addEventListener("DOMContentLoaded", async () => {
-        if (!(await checkAuth())) return;
+        if (!(await checkAuth())) {
+          window.location.href = "../auth.html";
+          return;
+        }
         const { user } = await getCurrentUser();
         currentUser = user;
-        document.getElementById("username").textContent =
-          user.email.split("@")[0];
         loadBalance();
         loadActiveNumbers();
+
+        // Check if user is admin and show admin button
+        const isAdmin = await isUserAdmin(user.id);
+        if (isAdmin) {
+          document.getElementById("adminSection").style.display = "block";
+        }
+
+        // Hamburger menu toggle
+        const hamburger = document.getElementById("hamburger");
+        const sidebar = document.querySelector(".sidebar");
+
+        if (hamburger && sidebar) {
+          // Toggle sidebar on hamburger click
+          function toggleSidebar(e) {
+            if (e) {
+              e.stopPropagation();
+              e.preventDefault();
+            }
+            hamburger.classList.toggle("active");
+            sidebar.classList.toggle("active");
+          }
+
+          hamburger.addEventListener("click", toggleSidebar);
+          hamburger.addEventListener("touchstart", toggleSidebar);
+
+          // Close sidebar when clicking outside
+          document.addEventListener(
+            "click",
+            (e) => {
+              const isClickOnHamburger = hamburger.contains(e.target);
+              const isClickOnSidebar = sidebar.contains(e.target);
+
+              if (
+                !isClickOnHamburger &&
+                !isClickOnSidebar &&
+                sidebar.classList.contains("active")
+              ) {
+                hamburger.classList.remove("active");
+                sidebar.classList.remove("active");
+              }
+            },
+            true
+          );
+
+          // Close sidebar when clicking a link on mobile
+          document.querySelectorAll(".sidebar-link").forEach((link) => {
+            link.addEventListener("click", () => {
+              if (window.innerWidth <= 768) {
+                hamburger.classList.remove("active");
+                sidebar.classList.remove("active");
+              }
+            });
+          });
+        }
+
+        // Logout button handler
+        const logoutBtn = document.getElementById("logoutBtn");
+        if (logoutBtn) {
+          logoutBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            const success = await signOut();
+            if (success) {
+              window.location.href = "../auth.html";
+            } else {
+              alert("Logout failed. Please try again.");
+            }
+          });
+        }
       });
 
       async function searchNumbers(service) {
@@ -459,7 +581,7 @@
           card.className = "number-card";
           card.innerHTML = `
                     <div class="number-text">${number}</div>
-                    <div class="number-status">USA - ${service.toUpperCase()}</div>
+                    <div class="number-status">USA</div>
                     <button class="btn-buy" onclick="buyNumber('${number}', '${service}', ${price})">
                         Buy ₦${price}
                     </button>
@@ -537,7 +659,7 @@
             }
 
             let html =
-              '<table class="number-table"><thead><tr><th>Number</th><th>Status</th><th>Expires</th><th>Actions</th></tr></thead><tbody>';
+              '<div class="table-container"><table class="number-table"><thead><tr><th>Number</th><th>Status</th><th>Expires</th><th>Actions</th></tr></thead><tbody>';
 
             serviceNumbers.forEach((num) => {
               const status =
@@ -561,7 +683,7 @@
                         `;
             });
 
-            html += "</tbody></table>";
+            html += "</tbody></table></div>";
             container.innerHTML = html;
           });
         } catch (error) {
@@ -616,20 +738,6 @@
       function showWarning(msg) {
         alert("⚠️ " + msg);
       }
-
-      // Hamburger menu toggle
-      document.getElementById("hamburger").addEventListener("click", () => {
-        document.getElementById("hamburger").classList.toggle("active");
-        document.querySelector(".sidebar").classList.toggle("active");
-      });
-
-      // Logout
-      document
-        .getElementById("logoutBtn")
-        .addEventListener("click", async () => {
-          await signOut();
-          window.location.href = "../auth.html";
-        });
     </script>
   </body>
 </html>

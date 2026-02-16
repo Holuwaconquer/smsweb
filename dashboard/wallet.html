@@ -219,6 +219,54 @@
         await checkAuth();
         await loadWalletData();
         initWalletUI();
+
+        // Hamburger menu toggle
+        const hamburger = document.getElementById("hamburger");
+        const sidebar = document.getElementById("sidebar");
+
+        if (hamburger && sidebar) {
+          // Toggle sidebar on hamburger click
+          function toggleSidebar(e) {
+            if (e) {
+              e.stopPropagation();
+              e.preventDefault();
+            }
+            hamburger.classList.toggle("active");
+            sidebar.classList.toggle("active");
+          }
+
+          hamburger.addEventListener("click", toggleSidebar);
+          hamburger.addEventListener("touchstart", toggleSidebar);
+
+          // Close sidebar when clicking outside
+          document.addEventListener(
+            "click",
+            (e) => {
+              const isClickOnHamburger = hamburger.contains(e.target);
+              const isClickOnSidebar = sidebar.contains(e.target);
+
+              if (
+                !isClickOnHamburger &&
+                !isClickOnSidebar &&
+                sidebar.classList.contains("active")
+              ) {
+                hamburger.classList.remove("active");
+                sidebar.classList.remove("active");
+              }
+            },
+            true
+          );
+
+          // Close sidebar when clicking a link on mobile
+          document.querySelectorAll(".sidebar-link").forEach((link) => {
+            link.addEventListener("click", () => {
+              if (window.innerWidth <= 768) {
+                hamburger.classList.remove("active");
+                sidebar.classList.remove("active");
+              }
+            });
+          });
+        }
       });
 
       async function checkAuth() {

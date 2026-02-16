@@ -3,714 +3,593 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Usage History - BasedSMS</title>
+    <title>Transaction History - BasedSMS</title>
     <link rel="stylesheet" href="../css/dashboard.css" />
     <style>
-      .history-container {
-        background: white;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        padding: 25px;
-      }
-
-      .stats-grid {
+      .stats-row {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
+        gap: 20px;
         margin-bottom: 30px;
       }
 
-      .stat-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+      .stat-box {
+        background: white;
         padding: 20px;
-        border-radius: 8px;
+        border-radius: 12px;
+        border: 1px solid #e0e0e0;
         text-align: center;
       }
 
-      .stat-card.services {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-      }
-
-      .stat-card.spent {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-      }
-
-      .stat-card.numbers {
-        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-      }
-
-      .stat-card.boosts {
-        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-      }
-
       .stat-value {
-        font-size: 32px;
+        font-size: 28px;
         font-weight: 700;
+        color: #00d4aa;
         margin-bottom: 5px;
       }
 
       .stat-label {
+        color: #999;
         font-size: 12px;
-        opacity: 0.9;
+        text-transform: uppercase;
+        font-weight: 600;
       }
 
       .filters-section {
-        background: #f9f9f9;
+        background: white;
         padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 25px;
-        display: flex;
+        border-radius: 12px;
+        border: 1px solid #e0e0e0;
+        margin-bottom: 30px;
+      }
+
+      .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 15px;
-        flex-wrap: wrap;
-        align-items: center;
       }
 
-      .filter-group {
+      .form-group {
         display: flex;
-        align-items: center;
-        gap: 8px;
+        flex-direction: column;
       }
 
-      .filter-group label {
+      .form-label {
         font-weight: 600;
+        margin-bottom: 8px;
         color: #333;
         font-size: 14px;
       }
 
-      .filter-group select,
-      .filter-group input {
-        padding: 8px 12px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 13px;
-        font-family: inherit;
+      .form-input,
+      .form-select {
+        padding: 10px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
       }
 
-      .filter-group select:focus,
-      .filter-group input:focus {
-        outline: none;
-        border-color: #2196f3;
-      }
-
-      .btn-filter {
-        background: #2196f3;
-        color: white;
-        padding: 8px 20px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 13px;
-        transition: background 0.3s;
-      }
-
-      .btn-filter:hover {
-        background: #1976d2;
-      }
-
-      .btn-export {
-        background: #4caf50;
-        color: white;
-        padding: 8px 20px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 13px;
-        transition: background 0.3s;
-      }
-
-      .btn-export:hover {
-        background: #45a049;
-      }
-
-      .table-responsive {
+      .table-container {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
         overflow-x: auto;
+        margin-bottom: 20px;
       }
 
-      .history-table {
+      table {
         width: 100%;
         border-collapse: collapse;
-        background: white;
       }
 
-      .history-table th {
-        background: #f5f5f5;
+      thead {
+        background: #f8f9fa;
+      }
+
+      th {
         padding: 15px;
         text-align: left;
         font-weight: 600;
-        border-bottom: 2px solid #ddd;
-        font-size: 13px;
-        color: #333;
-      }
-
-      .history-table td {
-        padding: 15px;
-        border-bottom: 1px solid #eee;
-        font-size: 13px;
-      }
-
-      .history-table tbody tr:hover {
-        background: #f9f9f9;
-      }
-
-      .service-badge {
-        display: inline-block;
-        background: #e3f2fd;
-        color: #1565c0;
-        padding: 4px 12px;
-        border-radius: 12px;
+        color: #666;
         font-size: 12px;
-        font-weight: 600;
+        text-transform: uppercase;
+        border-bottom: 2px solid #e0e0e0;
       }
 
-      .service-badge.logs {
-        background: #fff3e0;
-        color: #e65100;
-      }
-
-      .service-badge.boost {
-        background: #f3e5f5;
-        color: #6a1b9a;
-      }
-
-      .amount-positive {
-        color: #4caf50;
-        font-weight: 600;
-      }
-
-      .amount-negative {
-        color: #f44336;
-        font-weight: 600;
+      td {
+        padding: 15px;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 14px;
+        color: #333;
       }
 
       .status-badge {
         display: inline-block;
         padding: 4px 12px;
         border-radius: 12px;
-        font-size: 11px;
-        font-weight: 600;
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .status-credit {
+        background: #e0f7f4;
+        color: #00d4aa;
+      }
+
+      .status-debit {
+        background: #ffebee;
+        color: #ff4757;
       }
 
       .status-completed {
-        background: #e8f5e9;
-        color: #2e7d32;
-      }
-
-      .status-pending {
-        background: #fff3cd;
-        color: #856404;
-      }
-
-      .status-processing {
-        background: #d1ecf1;
-        color: #0c5460;
-      }
-
-      .status-expired {
-        background: #ffebee;
-        color: #c62828;
+        background: #e3f2fd;
+        color: #2196f3;
       }
 
       .pagination {
         display: flex;
         justify-content: center;
-        gap: 5px;
-        margin-top: 25px;
+        gap: 10px;
+        margin-top: 20px;
       }
 
-      .pagination button {
+      .btn-page {
         padding: 8px 12px;
-        border: 1px solid #ddd;
+        border: 1px solid #e0e0e0;
         background: white;
-        color: #333;
+        border-radius: 6px;
         cursor: pointer;
-        border-radius: 4px;
-        font-size: 13px;
+        transition: all 0.3s;
+      }
+
+      .btn-page:hover {
+        background: #f8f9fa;
+      }
+
+      .btn-page.active {
+        background: #00d4aa;
+        color: white;
+        border-color: #00d4aa;
+      }
+
+      .btn-export {
+        background: linear-gradient(135deg, #00d4aa, #00b894);
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
         font-weight: 600;
         transition: all 0.3s;
       }
 
-      .pagination button:hover {
-        background: #f9f9f9;
+      .btn-export:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 212, 170, 0.3);
       }
 
-      .pagination button.active {
-        background: #2196f3;
-        color: white;
-        border-color: #2196f3;
+      .balance-warning {
+        background: #fff3e0;
+        border: 1px solid #ffb74d;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        color: #e65100;
+        font-weight: 500;
       }
 
-      .pagination button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        color: #999;
-      }
-
-      .loading {
-        text-align: center;
-        padding: 40px 20px;
-      }
-
-      .spinner {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #2196f3;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-        margin: 0 auto;
-      }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
+      @media (max-width: 768px) {
+        .stats-row {
+          grid-template-columns: 1fr;
         }
-        100% {
-          transform: rotate(360deg);
+
+        .filter-grid {
+          grid-template-columns: 1fr;
         }
-      }
 
-      .search-input {
-        padding: 8px 12px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 13px;
-        width: 200px;
-        font-family: inherit;
-      }
+        table {
+          font-size: 12px;
+        }
 
-      .search-input:focus {
-        outline: none;
-        border-color: #2196f3;
-      }
-
-      .view-details-btn {
-        background: #2196f3;
-        color: white;
-        padding: 4px 10px;
-        border: none;
-        border-radius: 3px;
-        cursor: pointer;
-        font-size: 11px;
-        transition: background 0.3s;
-      }
-
-      .view-details-btn:hover {
-        background: #1976d2;
+        th,
+        td {
+          padding: 10px;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="dashboard-wrapper">
-      <!-- Sidebar -->
-      <aside class="sidebar">
-        <div class="logo">BasedSMS</div>
-        <nav class="nav-menu">
-          <a href="index.html" class="nav-link">Dashboard</a>
-          <a href="usa-numbers.html" class="nav-link">Buy USA Numbers</a>
-          <a href="all-countries.html" class="nav-link"
-            >International Numbers</a
-          >
-          <a href="logs.html" class="nav-link">Buy Logs</a>
-          <a href="booster.html" class="nav-link">Social Booster</a>
-          <a href="inbox.html" class="nav-link">SMS Inbox</a>
-          <a href="history.html" class="nav-link active">History</a>
-          <a href="wallet.html" class="nav-link">Wallet</a>
-          <a href="profile.html" class="nav-link">Profile</a>
-        </nav>
-        <div class="sidebar-footer">
-          <button id="logoutBtn" class="btn-logout">Logout</button>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+      <div class="nav-left">
+        <div class="hamburger" id="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
-      </aside>
+        <div class="logo">
+          <div class="logo-icon">B</div>
+          BasedSMS
+        </div>
+      </div>
+      <div class="nav-right">
+        <div class="balance-badge" id="balanceDisplay">₦0.00</div>
+      </div>
+    </nav>
 
-      <!-- Main Content -->
-      <main class="main-content">
-        <header class="top-bar">
-          <div class="hamburger" id="hamburger">
-            <span></span>
-            <span></span>
-            <span></span>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <a href="index.html" class="sidebar-link">📊 Dashboard</a>
+        <a href="usa-numbers.html" class="sidebar-link">🇺🇸 Buy USA Numbers</a>
+        <a href="all-countries.html" class="sidebar-link"
+          >🌍 International Numbers</a
+        >
+        <a href="logs.html" class="sidebar-link">📝 Buy Logs</a>
+        <a href="booster.html" class="sidebar-link">📈 Social Booster</a>
+        <a href="inbox.html" class="sidebar-link">📬 SMS Inbox</a>
+        <a href="history.html" class="sidebar-link active">📋 History</a>
+      </div>
+      <div class="sidebar-section">
+        <a href="wallet.html" class="sidebar-link">💰 Wallet</a>
+        <a href="profile.html" class="sidebar-link">👤 Profile</a>
+      </div>
+      <div class="sidebar-section" id="adminSection" style="display: none">
+        <a
+          href="../admin/index.html"
+          class="sidebar-link"
+          style="
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: white;
+            border-radius: 8px;
+          "
+          >⚙️ Admin Panel</a
+        >
+      </div>
+      <div class="sidebar-section" style="margin-top: auto">
+        <button
+          id="logoutBtn"
+          class="btn btn-danger"
+          style="width: 100%; padding: 12px; cursor: pointer"
+        >
+          🚪 Logout
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="page-header">
+        <h1>Transaction History</h1>
+        <p>View and manage all your transactions</p>
+      </div>
+
+      <div
+        id="balanceWarning"
+        class="balance-warning"
+        style="display: none"
+      ></div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-value" id="totalSpent">₦0.00</div>
+          <div class="stat-label">Total Spent</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="totalCredit">₦0.00</div>
+          <div class="stat-label">Total Credited</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="totalTransactions">0</div>
+          <div class="stat-label">Total Transactions</div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters-section">
+        <div class="filter-grid">
+          <div class="form-group">
+            <label class="form-label">Transaction Type</label>
+            <select
+              id="typeFilter"
+              class="form-select"
+              onchange="filterTransactions()"
+            >
+              <option value="">All Types</option>
+              <option value="debit">Debit (Spent)</option>
+              <option value="credit">Credit (Received)</option>
+            </select>
           </div>
-          <div class="header-right">
-            <div class="balance-display">
-              Balance: <strong id="balanceDisplay">₦0.00</strong>
-            </div>
-            <div class="user-menu">
-              <span id="username">User</span>
-            </div>
+          <div class="form-group">
+            <label class="form-label">Search Description</label>
+            <input
+              type="text"
+              id="searchFilter"
+              class="form-input"
+              placeholder="Search..."
+              onkeyup="filterTransactions()"
+            />
           </div>
-        </header>
-
-        <div class="content">
-          <h1>Usage History</h1>
-          <p>Complete record of all your activities and transactions</p>
-
-          <div class="history-container">
-            <!-- Statistics -->
-            <div class="stats-grid">
-              <div class="stat-card">
-                <div class="stat-value" id="totalTransactions">0</div>
-                <div class="stat-label">Total Transactions</div>
-              </div>
-              <div class="stat-card services">
-                <div class="stat-value" id="servicesCount">0</div>
-                <div class="stat-label">Services Used</div>
-              </div>
-              <div class="stat-card spent">
-                <div class="stat-value">₦<span id="totalSpent">0</span></div>
-                <div class="stat-label">Total Spent</div>
-              </div>
-              <div class="stat-card numbers">
-                <div class="stat-value" id="numbersCount">0</div>
-                <div class="stat-label">Numbers Purchased</div>
-              </div>
-            </div>
-
-            <!-- Filters -->
-            <div class="filters-section">
-              <div class="filter-group">
-                <label>Search:</label>
-                <input
-                  type="text"
-                  class="search-input"
-                  id="searchInput"
-                  placeholder="Search by number, platform..."
-                />
-              </div>
-              <div class="filter-group">
-                <label>Type:</label>
-                <select id="typeFilter">
-                  <option value="">All Types</option>
-                  <option value="sms_number">SMS Numbers</option>
-                  <option value="account_log">Account Logs</option>
-                  <option value="social_boost">Social Boost</option>
-                </select>
-              </div>
-              <div class="filter-group">
-                <label>Period:</label>
-                <select id="periodFilter">
-                  <option value="">All Time</option>
-                  <option value="7">Last 7 Days</option>
-                  <option value="30">Last 30 Days</option>
-                  <option value="90">Last 90 Days</option>
-                </select>
-              </div>
-              <button class="btn-filter" onclick="applyFilters()">
-                Filter
-              </button>
-              <button class="btn-export" onclick="exportHistory()">
-                Export CSV
-              </button>
-            </div>
-
-            <!-- History Table -->
-            <div class="table-responsive">
-              <table class="history-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Type</th>
-                    <th>Description</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody id="historyTableBody">
-                  <tr>
-                    <td colspan="6" style="text-align: center; padding: 40px">
-                      Loading...
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <!-- Pagination -->
-            <div class="pagination" id="paginationContainer"></div>
+          <div class="form-group">
+            <label class="form-label">Date Range</label>
+            <select
+              id="dateFilter"
+              class="form-select"
+              onchange="filterTransactions()"
+            >
+              <option value="">All Time</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <button class="btn-export" onclick="exportCSV()">
+              📥 Export CSV
+            </button>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+
+      <!-- Transactions Table -->
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Description</th>
+              <th>Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="transactionsBody">
+            <tr>
+              <td
+                colspan="5"
+                style="text-align: center; padding: 40px; color: #999"
+              >
+                Loading transactions...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" id="pagination"></div>
+    </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-config.js"></script>
     <script src="../js/dashboard.js"></script>
     <script>
       let currentUser = null;
-      let allHistory = [];
-      let filteredHistory = [];
+      let allTransactions = [];
       let currentPage = 1;
-      const itemsPerPage = 15;
+      const transactionsPerPage = 15;
 
       document.addEventListener("DOMContentLoaded", async () => {
-        if (!(await checkAuth())) return;
+        if (!(await checkAuth())) {
+          window.location.href = "../auth.html";
+          return;
+        }
         const { user } = await getCurrentUser();
         currentUser = user;
-        document.getElementById("username").textContent =
-          user.email.split("@")[0];
         loadBalance();
-        loadHistory();
+        loadTransactions();
+
+        // Check if user is admin and show admin button
+        const isAdmin = await isUserAdmin(user.id);
+        if (isAdmin) {
+          document.getElementById("adminSection").style.display = "block";
+        }
+
+        // Hamburger menu toggle
+        const hamburger = document.getElementById("hamburger");
+        const sidebar = document.querySelector(".sidebar");
+
+        if (hamburger && sidebar) {
+          // Toggle sidebar on hamburger click
+          function toggleSidebar(e) {
+            if (e) {
+              e.stopPropagation();
+              e.preventDefault();
+            }
+            hamburger.classList.toggle("active");
+            sidebar.classList.toggle("active");
+          }
+
+          hamburger.addEventListener("click", toggleSidebar);
+          hamburger.addEventListener("touchstart", toggleSidebar);
+
+          // Close sidebar when clicking outside
+          document.addEventListener(
+            "click",
+            (e) => {
+              const isClickOnHamburger = hamburger.contains(e.target);
+              const isClickOnSidebar = sidebar.contains(e.target);
+
+              if (
+                !isClickOnHamburger &&
+                !isClickOnSidebar &&
+                sidebar.classList.contains("active")
+              ) {
+                hamburger.classList.remove("active");
+                sidebar.classList.remove("active");
+              }
+            },
+            true
+          );
+
+          // Close sidebar when clicking a link on mobile
+          document.querySelectorAll(".sidebar-link").forEach((link) => {
+            link.addEventListener("click", () => {
+              if (window.innerWidth <= 768) {
+                hamburger.classList.remove("active");
+                sidebar.classList.remove("active");
+              }
+            });
+          });
+        }
+
+        // Logout button handler
+        const logoutBtn = document.getElementById("logoutBtn");
+        if (logoutBtn) {
+          logoutBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            const success = await signOut();
+            if (success) {
+              window.location.href = "../auth.html";
+            } else {
+              alert("Logout failed. Please try again.");
+            }
+          });
+        }
       });
 
-      async function loadHistory() {
+      async function loadTransactions() {
         try {
-          const numbers = await getSMSNumbers(currentUser.id);
-          const logs = await getLogsAccounts(currentUser.id);
-          const boosts = await getSocialBoosts(currentUser.id);
-          const transactions = await getTransactions(currentUser.id);
-
-          allHistory = [];
-
-          // Add SMS Numbers
-          numbers.forEach((num) => {
-            allHistory.push({
-              date: new Date(num.created_at),
-              type: "sms_number",
-              description: `${num.service.toUpperCase()} - ${num.phone_number}`,
-              amount: num.amount,
-              status: "completed",
-              country: num.country,
-            });
-          });
-
-          // Add Logs
-          logs.forEach((log) => {
-            allHistory.push({
-              date: new Date(log.created_at),
-              type: "account_log",
-              description: `${log.platform} account`,
-              amount: log.amount,
-              status: "completed",
-            });
-          });
-
-          // Add Boosts
-          boosts.forEach((boost) => {
-            allHistory.push({
-              date: new Date(boost.created_at),
-              type: "social_boost",
-              description: `${boost.platform.toUpperCase()} - ${
-                boost.boost_type
-              }`,
-              amount: boost.amount,
-              status: boost.status,
-            });
-          });
-
-          // Sort by date descending
-          allHistory.sort((a, b) => b.date - a.date);
-          filteredHistory = [...allHistory];
-
-          updateStatistics();
-          applyFilters();
+          allTransactions = await getTransactions(currentUser.id);
+          updateStats();
+          displayTransactions();
         } catch (error) {
-          console.error("Error loading history:", error);
+          console.error("Error loading transactions:", error);
         }
       }
 
-      function updateStatistics() {
+      function updateStats() {
+        let totalSpent = 0;
+        let totalCredit = 0;
+
+        allTransactions.forEach((tx) => {
+          if (tx.type === "debit") {
+            totalSpent += tx.amount;
+          } else {
+            totalCredit += tx.amount;
+          }
+        });
+
+        document.getElementById(
+          "totalSpent"
+        ).textContent = `₦${totalSpent.toFixed(2)}`;
+        document.getElementById(
+          "totalCredit"
+        ).textContent = `₦${totalCredit.toFixed(2)}`;
         document.getElementById("totalTransactions").textContent =
-          allHistory.length;
-
-        const services = new Set(allHistory.map((h) => h.type));
-        document.getElementById("servicesCount").textContent = services.size;
-
-        const total = allHistory.reduce((sum, h) => sum + (h.amount || 0), 0);
-        document.getElementById("totalSpent").textContent = total.toFixed(2);
-
-        const numbers = allHistory.filter(
-          (h) => h.type === "sms_number"
-        ).length;
-        document.getElementById("numbersCount").textContent = numbers;
+          allTransactions.length;
       }
 
-      function applyFilters() {
-        const searchQuery = document
-          .getElementById("searchInput")
-          .value.toLowerCase();
+      function filterTransactions() {
         const typeFilter = document.getElementById("typeFilter").value;
-        const periodFilter = parseInt(
-          document.getElementById("periodFilter").value
-        );
+        const searchFilter = document
+          .getElementById("searchFilter")
+          .value.toLowerCase();
+        const dateFilter = document.getElementById("dateFilter").value;
 
-        filteredHistory = allHistory.filter((item) => {
-          // Search filter
+        let filtered = allTransactions.filter((tx) => {
+          if (typeFilter && tx.type !== typeFilter) return false;
           if (
-            searchQuery &&
-            !item.description.toLowerCase().includes(searchQuery)
-          ) {
+            searchFilter &&
+            !tx.description.toLowerCase().includes(searchFilter)
+          )
             return false;
-          }
 
-          // Type filter
-          if (typeFilter && item.type !== typeFilter) {
-            return false;
-          }
+          if (dateFilter) {
+            const txDate = new Date(tx.created_at);
+            const today = new Date();
+            const diffTime = Math.abs(today - txDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-          // Period filter
-          if (periodFilter) {
-            const daysAgo = new Date();
-            daysAgo.setDate(daysAgo.getDate() - periodFilter);
-            if (item.date < daysAgo) {
-              return false;
-            }
+            if (dateFilter === "today" && diffDays > 1) return false;
+            if (dateFilter === "week" && diffDays > 7) return false;
+            if (dateFilter === "month" && diffDays > 30) return false;
           }
 
           return true;
         });
 
+        allTransactions = filtered;
         currentPage = 1;
-        displayHistory();
+        displayTransactions();
       }
 
-      function displayHistory() {
-        const tbody = document.getElementById("historyTableBody");
+      function displayTransactions() {
+        const start = (currentPage - 1) * transactionsPerPage;
+        const end = start + transactionsPerPage;
+        const pageTransactions = allTransactions.slice(start, end);
+        const tbody = document.getElementById("transactionsBody");
 
-        if (filteredHistory.length === 0) {
+        tbody.innerHTML = "";
+
+        if (pageTransactions.length === 0) {
           tbody.innerHTML =
-            '<tr><td colspan="6" class="empty-state">No history found</td></tr>';
-          document.getElementById("paginationContainer").innerHTML = "";
+            '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #999;">No transactions found</td></tr>';
+          document.getElementById("pagination").innerHTML = "";
           return;
         }
 
-        const start = (currentPage - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-        const pageItems = filteredHistory.slice(start, end);
-
-        let html = "";
-        pageItems.forEach((item) => {
-          const date = item.date.toLocaleString();
-          const typeDisplay = item.type.replace("_", " ").toUpperCase();
-          const statusClass = getStatusClass(item.status);
-
-          html += `
-                    <tr>
-                        <td>${date}</td>
-                        <td><span class="service-badge${
-                          item.type === "account_log"
-                            ? " logs"
-                            : item.type === "social_boost"
-                            ? " boost"
-                            : ""
-                        }">${typeDisplay}</span></td>
-                        <td>${item.description}</td>
-                        <td><span class="amount-negative">-₦${item.amount.toFixed(
-                          2
-                        )}</span></td>
-                        <td><span class="status-badge status-${item.status}">${
-            item.status
+        pageTransactions.forEach((tx) => {
+          const row = tbody.insertRow();
+          row.innerHTML = `
+                    <td>${new Date(tx.created_at).toLocaleDateString()}</td>
+                    <td><span class="status-badge status-${tx.type}">${
+            tx.type === "debit" ? "↓ Debit" : "↑ Credit"
           }</span></td>
-                        <td>
-                            <button class="view-details-btn" onclick="showDetails('${
-                              item.description
-                            }', '${item.type}')">Details</button>
-                        </td>
-                    </tr>
+                    <td>${tx.description}</td>
+                    <td style="color: ${
+                      tx.type === "debit" ? "#ff4757" : "#00d4aa"
+                    }; font-weight: 600;">
+                        ${tx.type === "debit" ? "-" : "+"}₦${tx.amount.toFixed(
+            2
+          )}
+                    </td>
+                    <td><span class="status-badge status-completed">Completed</span></td>
                 `;
         });
 
-        tbody.innerHTML = html;
-        generatePagination();
+        renderPagination();
       }
 
-      function generatePagination() {
-        const totalPages = Math.ceil(filteredHistory.length / itemsPerPage);
-        const container = document.getElementById("paginationContainer");
-
-        if (totalPages <= 1) {
-          container.innerHTML = "";
-          return;
-        }
-
-        let html =
-          '<button onclick="previousPage()" ' +
-          (currentPage === 1 ? "disabled" : "") +
-          ">Previous</button>";
+      function renderPagination() {
+        const totalPages = Math.ceil(
+          allTransactions.length / transactionsPerPage
+        );
+        const pagination = document.getElementById("pagination");
+        pagination.innerHTML = "";
 
         for (let i = 1; i <= totalPages; i++) {
-          html += `<button class="${
-            i === currentPage ? "active" : ""
-          }" onclick="goToPage(${i})">${i}</button>`;
-        }
-
-        html +=
-          '<button onclick="nextPage()" ' +
-          (currentPage === totalPages ? "disabled" : "") +
-          ">Next</button>";
-        container.innerHTML = html;
-      }
-
-      function goToPage(page) {
-        currentPage = page;
-        displayHistory();
-      }
-
-      function previousPage() {
-        if (currentPage > 1) {
-          currentPage--;
-          displayHistory();
+          const btn = document.createElement("button");
+          btn.className = `btn-page ${i === currentPage ? "active" : ""}`;
+          btn.textContent = i;
+          btn.onclick = () => {
+            currentPage = i;
+            displayTransactions();
+          };
+          pagination.appendChild(btn);
         }
       }
 
-      function nextPage() {
-        const totalPages = Math.ceil(filteredHistory.length / itemsPerPage);
-        if (currentPage < totalPages) {
-          currentPage++;
-          displayHistory();
-        }
-      }
-
-      function getStatusClass(status) {
-        switch (status) {
-          case "completed":
-            return "completed";
-          case "pending":
-            return "pending";
-          case "processing":
-            return "processing";
-          case "expired":
-            return "expired";
-          default:
-            return "completed";
-        }
-      }
-
-      function showDetails(description, type) {
-        alert(`📋 ${description}\nType: ${type.replace("_", " ")}`);
-      }
-
-      function exportHistory() {
-        if (filteredHistory.length === 0) {
-          showError("No data to export");
+      function exportCSV() {
+        if (allTransactions.length === 0) {
+          alert("No transactions to export");
           return;
         }
 
         let csv = "Date,Type,Description,Amount,Status\n";
-        filteredHistory.forEach((item) => {
-          csv += `"${item.date.toLocaleString()}","${item.type}","${
-            item.description
-          }","-₦${item.amount.toFixed(2)}","${item.status}"\n`;
+        allTransactions.forEach((tx) => {
+          csv += `${new Date(tx.created_at).toLocaleDateString()},"${
+            tx.type
+          }","${tx.description}",${tx.amount},"Completed"\n`;
         });
 
         const blob = new Blob([csv], { type: "text/csv" });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `basedsms-history-${
-          new Date().toISOString().split("T")[0]
-        }.csv`;
+        a.download = "transactions.csv";
         a.click();
-        window.URL.revokeObjectURL(url);
-
-        showSuccess("History exported successfully");
       }
 
       async function loadBalance() {
@@ -723,33 +602,6 @@
           console.error("Error loading balance:", error);
         }
       }
-
-      function showSuccess(msg) {
-        alert("✓ " + msg);
-      }
-
-      function showError(msg) {
-        alert("✗ " + msg);
-      }
-
-      // Search input enter key
-      document
-        .getElementById("searchInput")
-        .addEventListener("keypress", (e) => {
-          if (e.key === "Enter") applyFilters();
-        });
-
-      document.getElementById("hamburger").addEventListener("click", () => {
-        document.getElementById("hamburger").classList.toggle("active");
-        document.querySelector(".sidebar").classList.toggle("active");
-      });
-
-      document
-        .getElementById("logoutBtn")
-        .addEventListener("click", async () => {
-          await signOut();
-          window.location.href = "../auth.html";
-        });
     </script>
   </body>
 </html>

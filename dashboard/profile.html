@@ -1,221 +1,368 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Profile & Settings - Basedsms</title>
-    <link rel="stylesheet" href="../css/dashboard.css">
-</head>
-<body>
+    <link rel="stylesheet" href="../css/dashboard.css" />
+  </head>
+  <body>
     <!-- Top Navigation -->
     <nav class="top-nav">
-        <div class="nav-left">
-            <div class="hamburger" id="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-            <div class="logo">
-                <div class="logo-icon">B</div>
-                <span>Basedsms</span>
-            </div>
+      <div class="nav-left">
+        <div class="hamburger" id="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
-        <div class="nav-right">
-            <div class="balance-badge" id="balanceDisplay">₦0.00</div>
-            <button class="theme-toggle" id="themeToggle">🌙</button>
+        <div class="logo">
+          <div class="logo-icon">B</div>
+          <span>Basedsms</span>
         </div>
+      </div>
+      <div class="nav-right">
+        <div class="balance-badge" id="balanceDisplay">₦0.00</div>
+        <button class="theme-toggle" id="themeToggle">🌙</button>
+      </div>
     </nav>
 
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar-section">
-            <div class="sidebar-title">Menu</div>
-            <a href="index.html" class="sidebar-link">
-                <span class="sidebar-icon">🏠</span>
-                <span>Dashboard</span>
-            </a>
-            <a href="wallet.html" class="sidebar-link">
-                <span class="sidebar-icon">💰</span>
-                <span>Wallet</span>
-            </a>
-            <a href="profile.html" class="sidebar-link active">
-                <span class="sidebar-icon">👤</span>
-                <span>Profile</span>
-            </a>
-        </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Menu</div>
+        <a href="index.html" class="sidebar-link">
+          <span class="sidebar-icon">🏠</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="wallet.html" class="sidebar-link">
+          <span class="sidebar-icon">💰</span>
+          <span>Wallet</span>
+        </a>
+        <a href="profile.html" class="sidebar-link active">
+          <span class="sidebar-icon">👤</span>
+          <span>Profile</span>
+        </a>
+      </div>
     </aside>
 
     <!-- Main Content -->
     <main class="main-content">
-        <div class="page-header">
-            <h1>Profile & Settings</h1>
-            <p>Manage your account settings and preferences</p>
-        </div>
+      <div class="page-header">
+        <h1>Profile & Settings</h1>
+        <p>Manage your account settings and preferences</p>
+      </div>
 
-        <!-- Personal Information -->
-        <div class="content-section">
-            <h2 class="section-title">👤 Personal Information</h2>
-            <form id="profileForm">
-                <div class="form-group">
-                    <label class="form-label">Username</label>
-                    <input type="text" class="form-input" id="username" placeholder="Your username">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Email Address</label>
-                    <input type="email" class="form-input" id="email" placeholder="you@example.com" disabled style="background: #f5f5f5;">
-                    <small style="color: #666; font-size: 12px;">Email cannot be changed</small>
-                </div>
-                <button type="submit" class="btn btn-primary">Save Changes</button>
-            </form>
-        </div>
+      <!-- Personal Information -->
+      <div class="content-section">
+        <h2 class="section-title">👤 Personal Information</h2>
+        <form id="profileForm">
+          <div class="form-group">
+            <label class="form-label">Username</label>
+            <input
+              type="text"
+              class="form-input"
+              id="username"
+              placeholder="Your username"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input
+              type="email"
+              class="form-input"
+              id="email"
+              placeholder="you@example.com"
+              disabled
+              style="background: #f5f5f5"
+            />
+            <small style="color: #666; font-size: 12px"
+              >Email cannot be changed</small
+            >
+          </div>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+      </div>
 
-        <!-- Security -->
-        <div class="content-section">
-            <h2 class="section-title">🔒 Security</h2>
+      <!-- Security -->
+      <div class="content-section">
+        <h2 class="section-title">🔒 Security</h2>
+        <div>
+          <p style="margin-bottom: 15px; color: #666">Password</p>
+          <button class="btn btn-secondary" id="changePasswordBtn">
+            Change Password
+          </button>
+        </div>
+      </div>
+
+      <!-- Appearance -->
+      <div class="content-section">
+        <h2 class="section-title">🎨 Appearance</h2>
+        <div>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            "
+          >
             <div>
-                <p style="margin-bottom: 15px; color: #666;">Password</p>
-                <button class="btn btn-secondary" id="changePasswordBtn">Change Password</button>
+              <p style="font-weight: 500; margin-bottom: 5px">Dark Mode</p>
+              <p style="color: #666; font-size: 14px">
+                Toggle between light and dark theme
+              </p>
             </div>
+            <label
+              style="
+                position: relative;
+                display: inline-block;
+                width: 60px;
+                height: 34px;
+              "
+            >
+              <input
+                type="checkbox"
+                id="darkModeToggle"
+                style="opacity: 0; width: 0; height: 0"
+              />
+              <span
+                style="
+                  position: absolute;
+                  cursor: pointer;
+                  top: 0;
+                  left: 0;
+                  right: 0;
+                  bottom: 0;
+                  background-color: #ccc;
+                  transition: 0.4s;
+                  border-radius: 34px;
+                "
+              ></span>
+              <span
+                style="
+                  position: absolute;
+                  content: '';
+                  height: 26px;
+                  width: 26px;
+                  left: 4px;
+                  bottom: 4px;
+                  background-color: white;
+                  transition: 0.4s;
+                  border-radius: 50%;
+                "
+              ></span>
+            </label>
+          </div>
         </div>
+      </div>
 
-        <!-- Appearance -->
-        <div class="content-section">
-            <h2 class="section-title">🎨 Appearance</h2>
+      <!-- Support -->
+      <div class="content-section">
+        <h2 class="section-title">🤝 Support</h2>
+        <div style="display: grid; gap: 15px">
+          <a
+            href="#"
+            id="telegramLink"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              padding: 15px;
+              background: #f8f9fa;
+              border-radius: 8px;
+              text-decoration: none;
+              color: #333;
+              transition: all 0.3s;
+            "
+          >
+            <span style="font-size: 24px">💬</span>
             <div>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <p style="font-weight: 500; margin-bottom: 5px;">Dark Mode</p>
-                        <p style="color: #666; font-size: 14px;">Toggle between light and dark theme</p>
-                    </div>
-                    <label style="position: relative; display: inline-block; width: 60px; height: 34px;">
-                        <input type="checkbox" id="darkModeToggle" style="opacity: 0; width: 0; height: 0;">
-                        <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
-                        <span style="position: absolute; content: ''; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;"></span>
-                    </label>
-                </div>
+              <p style="font-weight: 500">Join us on Telegram</p>
+              <p style="font-size: 12px; color: #666">Get instant support</p>
             </div>
-        </div>
-
-        <!-- Support -->
-        <div class="content-section">
-            <h2 class="section-title">🤝 Support</h2>
-            <div style="display: grid; gap: 15px;">
-                <a href="#" id="telegramLink" style="display: flex; align-items: center; gap: 10px; padding: 15px; background: #f8f9fa; border-radius: 8px; text-decoration: none; color: #333; transition: all 0.3s;">
-                    <span style="font-size: 24px;">💬</span>
-                    <div>
-                        <p style="font-weight: 500;">Join us on Telegram</p>
-                        <p style="font-size: 12px; color: #666;">Get instant support</p>
-                    </div>
-                </a>
-                <a href="#" id="whatsappLink" style="display: flex; align-items: center; gap: 10px; padding: 15px; background: #f8f9fa; border-radius: 8px; text-decoration: none; color: #333; transition: all 0.3s;">
-                    <span style="font-size: 24px;">📱</span>
-                    <div>
-                        <p style="font-weight: 500;">WhatsApp Support</p>
-                        <p style="font-size: 12px; color: #666;">Chat with us directly</p>
-                    </div>
-                </a>
-            </div>
-        </div>
-
-        <!-- Danger Zone -->
-        <div class="content-section" style="border: 2px solid #ff4757;">
-            <h2 class="section-title" style="color: #ff4757;">⚠️ Danger Zone</h2>
+          </a>
+          <a
+            href="#"
+            id="whatsappLink"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              padding: 15px;
+              background: #f8f9fa;
+              border-radius: 8px;
+              text-decoration: none;
+              color: #333;
+              transition: all 0.3s;
+            "
+          >
+            <span style="font-size: 24px">📱</span>
             <div>
-                <p style="margin-bottom: 15px; color: #666;">Log Out</p>
-                <p style="font-size: 14px; color: #999; margin-bottom: 15px;">Sign out of your account on this device</p>
-                <button class="btn btn-danger" id="logoutBtn">🚪 Log Out</button>
+              <p style="font-weight: 500">WhatsApp Support</p>
+              <p style="font-size: 12px; color: #666">Chat with us directly</p>
             </div>
+          </a>
         </div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="content-section" style="border: 2px solid #ff4757">
+        <h2 class="section-title" style="color: #ff4757">⚠️ Danger Zone</h2>
+        <div>
+          <p style="margin-bottom: 15px; color: #666">Log Out</p>
+          <p style="font-size: 14px; color: #999; margin-bottom: 15px">
+            Sign out of your account on this device
+          </p>
+          <button class="btn btn-danger" id="logoutBtn">🚪 Log Out</button>
+        </div>
+      </div>
     </main>
 
     <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
+
     <!-- Scripts -->
     <script src="../js/supabase-config.js"></script>
     <script src="../js/dashboard.js"></script>
     <script>
-        // Profile specific functionality
-        let currentUser = null;
+      // Profile specific functionality
+      let currentUser = null;
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            await checkAuth();
-            await loadProfile();
-            initProfileUI();
+      document.addEventListener("DOMContentLoaded", async () => {
+        await checkAuth();
+        await loadProfile();
+        initProfileUI();
+
+        // Hamburger menu toggle
+        const hamburger = document.getElementById("hamburger");
+        const sidebar = document.getElementById("sidebar");
+
+        if (hamburger && sidebar) {
+          // Toggle sidebar on hamburger click
+          function toggleSidebar(e) {
+            if (e) {
+              e.stopPropagation();
+              e.preventDefault();
+            }
+            hamburger.classList.toggle("active");
+            sidebar.classList.toggle("active");
+          }
+
+          hamburger.addEventListener("click", toggleSidebar);
+          hamburger.addEventListener("touchstart", toggleSidebar);
+
+          // Close sidebar when clicking outside
+          document.addEventListener(
+            "click",
+            (e) => {
+              const isClickOnHamburger = hamburger.contains(e.target);
+              const isClickOnSidebar = sidebar.contains(e.target);
+
+              if (
+                !isClickOnHamburger &&
+                !isClickOnSidebar &&
+                sidebar.classList.contains("active")
+              ) {
+                hamburger.classList.remove("active");
+                sidebar.classList.remove("active");
+              }
+            },
+            true
+          );
+
+          // Close sidebar when clicking a link on mobile
+          document.querySelectorAll(".sidebar-link").forEach((link) => {
+            link.addEventListener("click", () => {
+              if (window.innerWidth <= 768) {
+                hamburger.classList.remove("active");
+                sidebar.classList.remove("active");
+              }
+            });
+          });
+        }
+      });
+
+      async function checkAuth() {
+        const isAuth = await Auth.checkAuth();
+        if (!isAuth) {
+          window.location.href = "../auth.html";
+          return;
+        }
+        const { user } = await Auth.getCurrentUser();
+        currentUser = user;
+      }
+
+      async function loadProfile() {
+        const result = await DB.getProfile(currentUser.id);
+        if (result.success) {
+          document.getElementById("username").value =
+            result.data.username || "";
+          document.getElementById("email").value = result.data.email;
+        }
+
+        const walletResult = await DB.getWallet(currentUser.id);
+        if (walletResult.success) {
+          document.getElementById(
+            "balanceDisplay"
+          ).textContent = `₦${walletResult.data.balance.toFixed(2)}`;
+        }
+      }
+
+      function initProfileUI() {
+        // Profile form
+        const profileForm = document.getElementById("profileForm");
+        profileForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const username = document.getElementById("username").value;
+
+          const result = await DB.updateProfile(currentUser.id, { username });
+
+          if (result.success) {
+            alert("✅ Profile updated successfully!");
+          } else {
+            alert("❌ Error updating profile: " + result.error);
+          }
         });
 
-        async function checkAuth() {
-            const isAuth = await Auth.checkAuth();
-            if (!isAuth) {
-                window.location.href = '../auth.html';
-                return;
-            }
-            const { user } = await Auth.getCurrentUser();
-            currentUser = user;
-        }
+        // Change password
+        const changePasswordBtn = document.getElementById("changePasswordBtn");
+        changePasswordBtn.addEventListener("click", () => {
+          alert(
+            "Password change functionality will redirect to Supabase reset password flow"
+          );
+          // In production, implement password reset via Supabase
+        });
 
-        async function loadProfile() {
-            const result = await DB.getProfile(currentUser.id);
-            if (result.success) {
-                document.getElementById('username').value = result.data.username || '';
-                document.getElementById('email').value = result.data.email;
-            }
+        // Dark mode toggle
+        const darkModeToggle = document.getElementById("darkModeToggle");
+        darkModeToggle.checked = localStorage.getItem("darkMode") === "true";
 
-            const walletResult = await DB.getWallet(currentUser.id);
-            if (walletResult.success) {
-                document.getElementById('balanceDisplay').textContent = `₦${walletResult.data.balance.toFixed(2)}`;
-            }
-        }
+        darkModeToggle.addEventListener("change", () => {
+          localStorage.setItem("darkMode", darkModeToggle.checked);
+          window.location.reload();
+        });
 
-        function initProfileUI() {
-            // Profile form
-            const profileForm = document.getElementById('profileForm');
-            profileForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                const username = document.getElementById('username').value;
-                
-                const result = await DB.updateProfile(currentUser.id, { username });
-                
-                if (result.success) {
-                    alert('✅ Profile updated successfully!');
-                } else {
-                    alert('❌ Error updating profile: ' + result.error);
-                }
-            });
+        // WhatsApp link
+        const whatsappLink = document.getElementById("whatsappLink");
+        whatsappLink.addEventListener("click", (e) => {
+          e.preventDefault();
+          const whatsappNumber = "2349012726301";
+          const message = encodeURIComponent(
+            "Hello, I need help with Basedsms"
+          );
+          window.open(
+            `https://wa.me/${whatsappNumber}?text=${message}`,
+            "_blank"
+          );
+        });
 
-            // Change password
-            const changePasswordBtn = document.getElementById('changePasswordBtn');
-            changePasswordBtn.addEventListener('click', () => {
-                alert('Password change functionality will redirect to Supabase reset password flow');
-                // In production, implement password reset via Supabase
-            });
-
-            // Dark mode toggle
-            const darkModeToggle = document.getElementById('darkModeToggle');
-            darkModeToggle.checked = localStorage.getItem('darkMode') === 'true';
-            
-            darkModeToggle.addEventListener('change', () => {
-                localStorage.setItem('darkMode', darkModeToggle.checked);
-                window.location.reload();
-            });
-
-            // WhatsApp link
-            const whatsappLink = document.getElementById('whatsappLink');
-            whatsappLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                const whatsappNumber = '2349012726301';
-                const message = encodeURIComponent('Hello, I need help with Basedsms');
-                window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
-            });
-
-            // Telegram link (replace with your actual telegram link)
-            const telegramLink = document.getElementById('telegramLink');
-            telegramLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                window.open('https://t.me/yourusername', '_blank');
-            });
-        }
+        // Telegram link (replace with your actual telegram link)
+        const telegramLink = document.getElementById("telegramLink");
+        telegramLink.addEventListener("click", (e) => {
+          e.preventDefault();
+          window.open("https://t.me/yourusername", "_blank");
+        });
+      }
     </script>
-</body>
+  </body>
 </html>

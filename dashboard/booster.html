@@ -3,712 +3,534 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Social Media Booster - BasedSMS</title>
+    <title>Social Booster - BasedSMS</title>
     <link rel="stylesheet" href="../css/dashboard.css" />
     <style>
-      .booster-container {
+      .booster-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
         gap: 25px;
+        margin-bottom: 30px;
       }
 
-      @media (max-width: 1024px) {
-        .booster-container {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      .form-section {
+      .booster-card {
         background: white;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 25px;
+        transition: all 0.3s;
       }
 
-      .form-section h2 {
-        margin-top: 0;
-        color: #333;
-        font-size: 24px;
-        margin-bottom: 25px;
+      .booster-card:hover {
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transform: translateY(-5px);
       }
 
-      .form-group {
-        margin-bottom: 20px;
-      }
-
-      .form-group label {
-        display: block;
-        font-weight: 600;
-        margin-bottom: 8px;
-        color: #333;
-      }
-
-      .form-group select,
-      .form-group input {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        font-size: 14px;
-        font-family: inherit;
-        box-sizing: border-box;
-      }
-
-      .form-group select:focus,
-      .form-group input:focus {
-        outline: none;
-        border-color: #2196f3;
-        box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
-      }
-
-      .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-      }
-
-      .price-info {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-      }
-
-      .price-info-label {
-        font-size: 12px;
-        opacity: 0.9;
-        margin-bottom: 5px;
-      }
-
-      .price-info-value {
-        font-size: 32px;
-        font-weight: 700;
-        margin-bottom: 10px;
-      }
-
-      .price-info-desc {
-        font-size: 12px;
-        opacity: 0.8;
-      }
-
-      .pricing-table {
-        background: #f9f9f9;
-        padding: 15px;
-        border-radius: 5px;
-        margin-bottom: 20px;
-        font-size: 12px;
-      }
-
-      .pricing-row {
+      .booster-header {
         display: flex;
         justify-content: space-between;
-        padding: 8px 0;
-        border-bottom: 1px solid #e0e0e0;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e0e0e0;
       }
 
-      .pricing-row:last-child {
-        border-bottom: none;
+      .booster-name {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .booster-icon {
+        font-size: 28px;
+      }
+
+      .booster-options {
+        margin-bottom: 20px;
+      }
+
+      .option-group {
+        margin-bottom: 15px;
+      }
+
+      .option-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #666;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+
+      .option-items {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .option-input {
+        padding: 10px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 14px;
+      }
+
+      .option-select {
+        padding: 10px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+
+      .price-display {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .price-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #666;
+        text-transform: uppercase;
+      }
+
+      .price-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #00d4aa;
       }
 
       .btn-boost {
-        background: #4caf50;
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #00d4aa, #00b894);
         color: white;
-        padding: 12px;
         border: none;
-        border-radius: 5px;
+        border-radius: 8px;
         cursor: pointer;
         font-weight: 600;
-        font-size: 16px;
-        width: 100%;
-        transition: background 0.3s;
-        margin-bottom: 10px;
+        transition: all 0.3s;
       }
 
       .btn-boost:hover {
-        background: #45a049;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 212, 170, 0.3);
       }
 
-      .btn-boost:disabled {
-        background: #ccc;
-        cursor: not-allowed;
-      }
-
-      .active-orders {
-        background: white;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      }
-
-      .active-orders h2 {
-        margin-top: 0;
-        color: #333;
-        font-size: 24px;
-        margin-bottom: 25px;
-      }
-
-      .orders-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 15px;
-      }
-
-      .order-card {
-        background: #f9f9f9;
-        padding: 20px;
+      .balance-warning {
+        background: #fff3e0;
+        border: 1px solid #ffb74d;
+        padding: 15px;
         border-radius: 8px;
-        border: 1px solid #e0e0e0;
-      }
-
-      .order-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: start;
-        margin-bottom: 15px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid #e0e0e0;
-      }
-
-      .order-platform {
-        font-weight: 700;
-        color: #333;
-      }
-
-      .order-status {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-      }
-
-      .status-pending {
-        background: #fff3cd;
-        color: #856404;
-      }
-
-      .status-processing {
-        background: #d1ecf1;
-        color: #0c5460;
-      }
-
-      .status-completed {
-        background: #d4edda;
-        color: #155724;
-      }
-
-      .status-failed {
-        background: #f8d7da;
-        color: #721c24;
-      }
-
-      .order-details {
-        margin-bottom: 15px;
-        font-size: 13px;
-        color: #555;
-      }
-
-      .detail-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 6px;
-      }
-
-      .detail-label {
-        font-weight: 600;
-      }
-
-      .progress-bar {
-        background: #e0e0e0;
-        height: 8px;
-        border-radius: 4px;
-        overflow: hidden;
-        margin-bottom: 10px;
-      }
-
-      .progress-fill {
-        background: #2196f3;
-        height: 100%;
-        border-radius: 4px;
-        transition: width 0.3s;
-      }
-
-      .empty-state {
-        text-align: center;
-        padding: 40px 20px;
-        color: #999;
-      }
-
-      .info-box {
-        background: #e3f2fd;
-        border-left: 4px solid #2196f3;
-        padding: 15px;
-        border-radius: 4px;
         margin-bottom: 25px;
-        font-size: 13px;
-        color: #1565c0;
+        color: #e65100;
+        font-weight: 500;
       }
 
-      .warning-box {
-        background: #fff3cd;
-        border-left: 4px solid #ffc107;
-        padding: 15px;
-        border-radius: 4px;
-        margin-bottom: 25px;
-        font-size: 13px;
-        color: #856404;
+      @media (max-width: 768px) {
+        .booster-grid {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="dashboard-wrapper">
-      <!-- Sidebar -->
-      <aside class="sidebar">
-        <div class="logo">BasedSMS</div>
-        <nav class="nav-menu">
-          <a href="index.html" class="nav-link">Dashboard</a>
-          <a href="usa-numbers.html" class="nav-link">Buy USA Numbers</a>
-          <a href="all-countries.html" class="nav-link"
-            >International Numbers</a
-          >
-          <a href="logs.html" class="nav-link">Buy Logs</a>
-          <a href="booster.html" class="nav-link active">Social Booster</a>
-          <a href="inbox.html" class="nav-link">SMS Inbox</a>
-          <a href="history.html" class="nav-link">History</a>
-          <a href="wallet.html" class="nav-link">Wallet</a>
-          <a href="profile.html" class="nav-link">Profile</a>
-        </nav>
-        <div class="sidebar-footer">
-          <button id="logoutBtn" class="btn-logout">Logout</button>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+      <div class="nav-left">
+        <div class="hamburger" id="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
-      </aside>
-
-      <!-- Main Content -->
-      <main class="main-content">
-        <header class="top-bar">
-          <div class="hamburger" id="hamburger">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-          <div class="header-right">
-            <div class="balance-display">
-              Balance: <strong id="balanceDisplay">₦0.00</strong>
-            </div>
-            <div class="user-menu">
-              <span id="username">User</span>
-            </div>
-          </div>
-        </header>
-
-        <div class="content">
-          <h1>Social Media Booster</h1>
-          <p>Boost your social media presence instantly</p>
-
-          <div class="booster-container">
-            <!-- Boost Form -->
-            <div class="form-section">
-              <h2>Create Boost Order</h2>
-
-              <div class="info-box">
-                💡 Deliveries typically start within minutes. Real, high-quality
-                engagement.
-              </div>
-
-              <form id="boostForm">
-                <div class="form-group">
-                  <label for="platform">Platform *</label>
-                  <select id="platform" onchange="updatePricing()" required>
-                    <option value="">Select a platform</option>
-                    <option value="instagram">Instagram</option>
-                    <option value="tiktok">TikTok</option>
-                    <option value="twitter">Twitter/X</option>
-                    <option value="youtube">YouTube</option>
-                    <option value="facebook">Facebook</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label for="boostType">Boost Type *</label>
-                  <select id="boostType" onchange="updatePricing()" required>
-                    <option value="">Select boost type</option>
-                    <option value="followers">Followers</option>
-                    <option value="likes">Likes</option>
-                    <option value="views">Views</option>
-                    <option value="comments">Comments</option>
-                    <option value="shares">Shares</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label for="username">Username/Handle *</label>
-                  <input
-                    type="text"
-                    id="username"
-                    placeholder="Enter your username"
-                    required
-                  />
-                </div>
-
-                <div class="form-group">
-                  <label for="targetUrl"
-                    >Post URL (for likes/comments/views)</label
-                  >
-                  <input type="url" id="targetUrl" placeholder="https://..." />
-                </div>
-
-                <div class="form-group">
-                  <label for="quantity">Quantity *</label>
-                  <input
-                    type="number"
-                    id="quantity"
-                    placeholder="100"
-                    min="10"
-                    max="10000"
-                    onchange="updatePricing()"
-                    required
-                  />
-                </div>
-
-                <div class="price-info">
-                  <div class="price-info-label">Estimated Cost</div>
-                  <div class="price-info-value">
-                    ₦<span id="estimatedCost">0</span>
-                  </div>
-                  <div class="price-info-desc">
-                    Quantity:
-                    <strong><span id="quantityDisplay">0</span></strong>
-                  </div>
-                </div>
-
-                <div class="pricing-table">
-                  <div class="pricing-row">
-                    <span>Instagram Followers:</span>
-                    <span>₦0.50 per 100</span>
-                  </div>
-                  <div class="pricing-row">
-                    <span>TikTok Followers:</span>
-                    <span>₦0.60 per 100</span>
-                  </div>
-                  <div class="pricing-row">
-                    <span>Instagram Likes:</span>
-                    <span>₦0.30 per 100</span>
-                  </div>
-                  <div class="pricing-row">
-                    <span>Views:</span>
-                    <span>₦0.02 per 1000</span>
-                  </div>
-                  <div class="pricing-row">
-                    <span>Comments:</span>
-                    <span>₦10 per 10</span>
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  class="btn-boost"
-                  onclick="submitBoost(event)"
-                >
-                  Boost Now
-                </button>
-              </form>
-            </div>
-
-            <!-- Pricing Guide -->
-            <div class="form-section">
-              <h2>Pricing Guide</h2>
-
-              <div class="warning-box">
-                ⚠️ All deliveries are permanent. No refunds after completion.
-              </div>
-
-              <h3 style="margin-top: 0; color: #333; font-size: 16px">
-                Instagram
-              </h3>
-              <div class="pricing-table">
-                <div class="pricing-row">
-                  <span>Followers</span>
-                  <span>₦0.50 per 100</span>
-                </div>
-                <div class="pricing-row">
-                  <span>Likes</span>
-                  <span>₦0.30 per 100</span>
-                </div>
-                <div class="pricing-row">
-                  <span>Comments</span>
-                  <span>₦10 per 10</span>
-                </div>
-              </div>
-
-              <h3 style="margin-top: 20px; color: #333; font-size: 16px">
-                TikTok
-              </h3>
-              <div class="pricing-table">
-                <div class="pricing-row">
-                  <span>Followers</span>
-                  <span>₦0.60 per 100</span>
-                </div>
-                <div class="pricing-row">
-                  <span>Likes</span>
-                  <span>₦0.35 per 100</span>
-                </div>
-                <div class="pricing-row">
-                  <span>Views</span>
-                  <span>₦0.02 per 1000</span>
-                </div>
-              </div>
-
-              <h3 style="margin-top: 20px; color: #333; font-size: 16px">
-                YouTube
-              </h3>
-              <div class="pricing-table">
-                <div class="pricing-row">
-                  <span>Subscribers</span>
-                  <span>₦1.00 per 1</span>
-                </div>
-                <div class="pricing-row">
-                  <span>Views</span>
-                  <span>₦0.01 per 1000</span>
-                </div>
-              </div>
-
-              <h3 style="margin-top: 20px; color: #333; font-size: 16px">
-                General Info
-              </h3>
-              <div class="pricing-table">
-                <div class="pricing-row">
-                  <span>Minimum Order:</span>
-                  <span>10 units</span>
-                </div>
-                <div class="pricing-row">
-                  <span>Maximum Order:</span>
-                  <span>10,000 units</span>
-                </div>
-                <div class="pricing-row">
-                  <span>Drop Rate:</span>
-                  <span>&lt; 1%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Active Orders -->
-          <div class="active-orders">
-            <h2>Active Boost Orders</h2>
-            <div id="ordersContainer"></div>
-          </div>
+        <div class="logo">
+          <div class="logo-icon">B</div>
+          BasedSMS
         </div>
-      </main>
-    </div>
+      </div>
+      <div class="nav-right">
+        <div class="balance-badge" id="balanceDisplay">₦0.00</div>
+      </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <a href="index.html" class="sidebar-link">📊 Dashboard</a>
+        <a href="usa-numbers.html" class="sidebar-link">🇺🇸 Buy USA Numbers</a>
+        <a href="all-countries.html" class="sidebar-link"
+          >🌍 International Numbers</a
+        >
+        <a href="logs.html" class="sidebar-link">📝 Buy Logs</a>
+        <a href="booster.html" class="sidebar-link active">📈 Social Booster</a>
+        <a href="inbox.html" class="sidebar-link">📬 SMS Inbox</a>
+        <a href="history.html" class="sidebar-link">📋 History</a>
+      </div>
+      <div class="sidebar-section">
+        <a href="wallet.html" class="sidebar-link">💰 Wallet</a>
+        <a href="profile.html" class="sidebar-link">👤 Profile</a>
+      </div>
+      <div class="sidebar-section" id="adminSection" style="display: none">
+        <a
+          href="../admin/index.html"
+          class="sidebar-link"
+          style="
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: white;
+            border-radius: 8px;
+          "
+          >⚙️ Admin Panel</a
+        >
+      </div>
+      <div class="sidebar-section" style="margin-top: auto">
+        <button
+          id="logoutBtn"
+          class="btn btn-danger"
+          style="width: 100%; padding: 12px; cursor: pointer"
+        >
+          🚪 Logout
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="page-header">
+        <h1>Social Media Booster</h1>
+        <p>
+          Boost your social media presence with instant followers, likes, views
+          and more
+        </p>
+      </div>
+
+      <div
+        id="balanceWarning"
+        class="balance-warning"
+        style="display: none"
+      ></div>
+
+      <div class="booster-grid">
+        <!-- Instagram Booster -->
+        <div class="booster-card">
+          <div class="booster-header">
+            <div class="booster-name">
+              <div class="booster-icon">📷</div>
+              <span>Instagram</span>
+            </div>
+          </div>
+          <div class="booster-options">
+            <div class="option-group">
+              <div class="option-label">Service Type</div>
+              <select
+                class="option-select"
+                id="ig-service"
+                onchange="updatePrice('instagram')"
+              >
+                <option value="followers">Followers (+100)</option>
+                <option value="likes">Likes (+500)</option>
+                <option value="views">Views (+1000)</option>
+                <option value="comments">Comments (+50)</option>
+              </select>
+            </div>
+            <div class="option-group">
+              <div class="option-label">Quantity</div>
+              <input
+                type="number"
+                class="option-input"
+                id="ig-quantity"
+                value="1"
+                min="1"
+                onchange="updatePrice('instagram')"
+              />
+            </div>
+          </div>
+          <div class="price-display">
+            <span class="price-label">Total Cost</span>
+            <span class="price-value" id="ig-price">₦500</span>
+          </div>
+          <button class="btn-boost" onclick="boost('instagram')">
+            Boost Now
+          </button>
+        </div>
+
+        <!-- TikTok Booster -->
+        <div class="booster-card">
+          <div class="booster-header">
+            <div class="booster-name">
+              <div class="booster-icon">🎵</div>
+              <span>TikTok</span>
+            </div>
+          </div>
+          <div class="booster-options">
+            <div class="option-group">
+              <div class="option-label">Service Type</div>
+              <select
+                class="option-select"
+                id="tiktok-service"
+                onchange="updatePrice('tiktok')"
+              >
+                <option value="followers">Followers (+100)</option>
+                <option value="likes">Likes (+500)</option>
+                <option value="views">Views (+1000)</option>
+                <option value="shares">Shares (+100)</option>
+              </select>
+            </div>
+            <div class="option-group">
+              <div class="option-label">Quantity</div>
+              <input
+                type="number"
+                class="option-input"
+                id="tiktok-quantity"
+                value="1"
+                min="1"
+                onchange="updatePrice('tiktok')"
+              />
+            </div>
+          </div>
+          <div class="price-display">
+            <span class="price-label">Total Cost</span>
+            <span class="price-value" id="tiktok-price">₦400</span>
+          </div>
+          <button class="btn-boost" onclick="boost('tiktok')">Boost Now</button>
+        </div>
+
+        <!-- YouTube Booster -->
+        <div class="booster-card">
+          <div class="booster-header">
+            <div class="booster-name">
+              <div class="booster-icon">📺</div>
+              <span>YouTube</span>
+            </div>
+          </div>
+          <div class="booster-options">
+            <div class="option-group">
+              <div class="option-label">Service Type</div>
+              <select
+                class="option-select"
+                id="yt-service"
+                onchange="updatePrice('youtube')"
+              >
+                <option value="subscribers">Subscribers (+50)</option>
+                <option value="views">Views (+1000)</option>
+                <option value="likes">Likes (+200)</option>
+                <option value="comments">Comments (+50)</option>
+              </select>
+            </div>
+            <div class="option-group">
+              <div class="option-label">Quantity</div>
+              <input
+                type="number"
+                class="option-input"
+                id="yt-quantity"
+                value="1"
+                min="1"
+                onchange="updatePrice('youtube')"
+              />
+            </div>
+          </div>
+          <div class="price-display">
+            <span class="price-label">Total Cost</span>
+            <span class="price-value" id="youtube-price">₦600</span>
+          </div>
+          <button class="btn-boost" onclick="boost('youtube')">
+            Boost Now
+          </button>
+        </div>
+
+        <!-- Twitter Booster -->
+        <div class="booster-card">
+          <div class="booster-header">
+            <div class="booster-name">
+              <div class="booster-icon">🐦</div>
+              <span>Twitter</span>
+            </div>
+          </div>
+          <div class="booster-options">
+            <div class="option-group">
+              <div class="option-label">Service Type</div>
+              <select
+                class="option-select"
+                id="twitter-service"
+                onchange="updatePrice('twitter')"
+              >
+                <option value="followers">Followers (+100)</option>
+                <option value="retweets">Retweets (+200)</option>
+                <option value="likes">Likes (+300)</option>
+                <option value="replies">Replies (+100)</option>
+              </select>
+            </div>
+            <div class="option-group">
+              <div class="option-label">Quantity</div>
+              <input
+                type="number"
+                class="option-input"
+                id="twitter-quantity"
+                value="1"
+                min="1"
+                onchange="updatePrice('twitter')"
+              />
+            </div>
+          </div>
+          <div class="price-display">
+            <span class="price-label">Total Cost</span>
+            <span class="price-value" id="twitter-price">₦450</span>
+          </div>
+          <button class="btn-boost" onclick="boost('twitter')">
+            Boost Now
+          </button>
+        </div>
+      </div>
+    </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-config.js"></script>
     <script src="../js/dashboard.js"></script>
     <script>
       let currentUser = null;
-
-      const prices = {
-        instagram: { followers: 0.5, likes: 0.3, comments: 10, shares: 0.4 },
-        tiktok: {
-          followers: 0.6,
-          likes: 0.35,
-          views: 0.02,
-          comments: 15,
-          shares: 0.5,
-        },
-        twitter: {
-          followers: 0.8,
-          likes: 0.25,
-          views: 0.015,
-          comments: 12,
-          shares: 0.6,
-        },
-        youtube: {
-          followers: 1.0,
-          likes: 0.4,
-          views: 0.01,
-          comments: 20,
-          shares: 0.8,
-        },
-        facebook: { followers: 0.7, likes: 0.35, views: 0.02, shares: 1.0 },
+      const basePrices = {
+        instagram: { followers: 500, likes: 300, views: 200, comments: 400 },
+        tiktok: { followers: 400, likes: 250, views: 150, shares: 300 },
+        youtube: { subscribers: 600, views: 200, likes: 350, comments: 450 },
+        twitter: { followers: 450, retweets: 300, likes: 250, replies: 350 },
       };
 
       document.addEventListener("DOMContentLoaded", async () => {
-        if (!(await checkAuth())) return;
+        if (!(await checkAuth())) {
+          window.location.href = "../auth.html";
+          return;
+        }
         const { user } = await getCurrentUser();
         currentUser = user;
-        document.getElementById("username").textContent =
-          user.email.split("@")[0];
         loadBalance();
-        loadActiveOrders();
+
+        // Check if user is admin and show admin button
+        const isAdmin = await isUserAdmin(user.id);
+        if (isAdmin) {
+          document.getElementById("adminSection").style.display = "block";
+        }
+
+        // Hamburger menu toggle
+        const hamburger = document.getElementById("hamburger");
+        const sidebar = document.querySelector(".sidebar");
+
+        if (hamburger && sidebar) {
+          // Toggle sidebar on hamburger click
+          function toggleSidebar(e) {
+            if (e) {
+              e.stopPropagation();
+              e.preventDefault();
+            }
+            hamburger.classList.toggle("active");
+            sidebar.classList.toggle("active");
+          }
+
+          hamburger.addEventListener("click", toggleSidebar);
+          hamburger.addEventListener("touchstart", toggleSidebar);
+
+          // Close sidebar when clicking outside
+          document.addEventListener(
+            "click",
+            (e) => {
+              const isClickOnHamburger = hamburger.contains(e.target);
+              const isClickOnSidebar = sidebar.contains(e.target);
+
+              if (
+                !isClickOnHamburger &&
+                !isClickOnSidebar &&
+                sidebar.classList.contains("active")
+              ) {
+                hamburger.classList.remove("active");
+                sidebar.classList.remove("active");
+              }
+            },
+            true
+          );
+
+          // Close sidebar when clicking a link on mobile
+          document.querySelectorAll(".sidebar-link").forEach((link) => {
+            link.addEventListener("click", () => {
+              if (window.innerWidth <= 768) {
+                hamburger.classList.remove("active");
+                sidebar.classList.remove("active");
+              }
+            });
+          });
+        }
+
+        // Logout button handler
+        const logoutBtn = document.getElementById("logoutBtn");
+        if (logoutBtn) {
+          logoutBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            const success = await signOut();
+            if (success) {
+              window.location.href = "../auth.html";
+            } else {
+              alert("Logout failed. Please try again.");
+            }
+          });
+        }
       });
 
-      function updatePricing() {
-        const platform = document.getElementById("platform").value;
-        const boostType = document.getElementById("boostType").value;
+      function updatePrice(platform) {
+        const service = document.getElementById(`${platform}-service`).value;
         const quantity =
-          parseInt(document.getElementById("quantity").value) || 0;
-
-        document.getElementById("quantityDisplay").textContent = quantity;
-
-        if (!platform || !boostType || quantity === 0) {
-          document.getElementById("estimatedCost").textContent = "0";
-          return;
-        }
-
-        let pricePerUnit = prices[platform][boostType] || 0;
-
-        // Adjust for views (per 1000)
-        if (boostType === "views") {
-          pricePerUnit = (pricePerUnit * quantity) / 1000;
-        } else {
-          pricePerUnit = pricePerUnit * (quantity / 100);
-        }
-
-        const totalCost = Math.round(pricePerUnit * 100) / 100;
-        document.getElementById("estimatedCost").textContent =
-          totalCost.toFixed(2);
+          parseInt(document.getElementById(`${platform}-quantity`).value) || 1;
+        const basePrice = basePrices[platform][service];
+        const totalPrice = basePrice * quantity;
+        document.getElementById(
+          `${platform}-price`
+        ).textContent = `₦${totalPrice}`;
       }
 
-      function submitBoost(e) {
-        e.preventDefault();
+      async function boost(platform) {
+        const service = document.getElementById(`${platform}-service`).value;
+        const quantity =
+          parseInt(document.getElementById(`${platform}-quantity`).value) || 1;
+        const basePrice = basePrices[platform][service];
+        const totalPrice = basePrice * quantity;
 
-        const platform = document.getElementById("platform").value;
-        const boostType = document.getElementById("boostType").value;
-        const username = document.getElementById("username").value;
-        const targetUrl = document.getElementById("targetUrl").value;
-        const quantity = parseInt(document.getElementById("quantity").value);
-        const cost = parseFloat(
-          document.getElementById("estimatedCost").textContent
-        );
-
-        if (!platform || !boostType || !username || quantity < 10) {
-          showError("Please fill all required fields correctly");
-          return;
-        }
-
-        if (
-          (boostType === "likes" ||
-            boostType === "comments" ||
-            boostType === "views") &&
-          !targetUrl
-        ) {
-          showError("Post URL is required for this boost type");
-          return;
-        }
-
-        processBoost(platform, boostType, username, targetUrl, quantity, cost);
-      }
-
-      async function processBoost(
-        platform,
-        boostType,
-        username,
-        targetUrl,
-        quantity,
-        cost
-      ) {
         const wallet = await getWallet(currentUser.id);
 
-        if (wallet.balance < cost) {
-          showError(
-            `Insufficient balance. You need ₦${cost} but have ₦${wallet.balance}`
+        if (wallet.balance < totalPrice) {
+          showWarning(
+            `Insufficient balance. You need ₦${totalPrice} but have ₦${wallet.balance}`
           );
           return;
         }
 
         try {
-          await updateWallet(currentUser.id, wallet.balance - cost);
+          await updateWallet(currentUser.id, wallet.balance - totalPrice);
           await createTransaction(
             currentUser.id,
             "debit",
-            cost,
-            `Boost order: ${boostType} on ${platform}`,
+            totalPrice,
+            `Boosted ${platform} ${service}`,
             "social_boost"
           );
-
           await addSocialBoost(
             currentUser.id,
             platform,
-            boostType,
-            username,
-            targetUrl,
+            service,
             quantity,
-            cost
+            totalPrice
           );
 
-          showSuccess(`Boost order created! Order will be processed shortly.`);
+          showSuccess(
+            `Boost started!\nService: ${service}\nQuantity: ${quantity}\nYour ${platform} will be boosted soon!`
+          );
           loadBalance();
-          loadActiveOrders();
-          document.getElementById("boostForm").reset();
-          updatePricing();
         } catch (error) {
           console.error("Boost error:", error);
-          showError("Order creation failed. Please try again.");
-        }
-      }
-
-      async function loadActiveOrders() {
-        try {
-          const orders = await getSocialBoosts(currentUser.id);
-          const container = document.getElementById("ordersContainer");
-
-          if (orders.length === 0) {
-            container.innerHTML =
-              '<div class="empty-state">No active boost orders</div>';
-            return;
-          }
-
-          let html = '<div class="orders-grid">';
-
-          orders.forEach((order) => {
-            const progress = (order.delivered / order.quantity) * 100;
-            html += `
-                        <div class="order-card">
-                            <div class="order-header">
-                                <div>
-                                    <div class="order-platform">${order.platform.toUpperCase()}</div>
-                                    <div style="color: #666; font-size: 12px; margin-top: 4px;">${
-                                      order.boost_type
-                                    }</div>
-                                </div>
-                                <span class="order-status status-${
-                                  order.status
-                                }">${order.status}</span>
-                            </div>
-                            <div class="order-details">
-                                <div class="detail-row">
-                                    <span class="detail-label">Target:</span>
-                                    <span>@${order.username}</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="detail-label">Quantity:</span>
-                                    <span>${order.quantity}</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="detail-label">Delivered:</span>
-                                    <span>${order.delivered}</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="detail-label">Cost:</span>
-                                    <span>₦${order.amount}</span>
-                                </div>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${progress}%"></div>
-                            </div>
-                            <div style="font-size: 11px; color: #999; text-align: center;">
-                                ${progress.toFixed(1)}% completed
-                            </div>
-                        </div>
-                    `;
-          });
-
-          html += "</div>";
-          container.innerHTML = html;
-        } catch (error) {
-          console.error("Error loading orders:", error);
+          showError("Boost failed. Please try again.");
         }
       }
 
@@ -718,6 +540,12 @@
           document.getElementById(
             "balanceDisplay"
           ).textContent = `₦${wallet.balance.toFixed(2)}`;
+
+          if (wallet.balance < 100) {
+            document.getElementById("balanceWarning").style.display = "block";
+            document.getElementById("balanceWarning").textContent =
+              "⚠️ Low balance. Top up your wallet to continue.";
+          }
         } catch (error) {
           console.error("Error loading balance:", error);
         }
@@ -731,17 +559,9 @@
         alert("✗ " + msg);
       }
 
-      document.getElementById("hamburger").addEventListener("click", () => {
-        document.getElementById("hamburger").classList.toggle("active");
-        document.querySelector(".sidebar").classList.toggle("active");
-      });
-
-      document
-        .getElementById("logoutBtn")
-        .addEventListener("click", async () => {
-          await signOut();
-          window.location.href = "../auth.html";
-        });
+      function showWarning(msg) {
+        alert("⚠️ " + msg);
+      }
     </script>
   </body>
 </html>

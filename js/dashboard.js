@@ -40,6 +40,16 @@ async function signOut() {
   }
 }
 
+async function isUserAdmin(userId) {
+  try {
+    const profile = await getProfile(userId);
+    return profile && profile.is_admin === true;
+  } catch (error) {
+    console.error("Admin check error:", error);
+    return false;
+  }
+}
+
 // ============================================
 // PROFILE FUNCTIONS
 // ============================================

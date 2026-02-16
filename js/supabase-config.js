@@ -1,17 +1,42 @@
 // Supabase Configuration
-// Replace these with your actual Supabase credentials
+// Environment variables are loaded from .env file during build
+// For Vercel: Set environment variables in Project Settings → Environment Variables
 
-const SUPABASE_CONFIG = {
-  url: "https://bsgrvwykbyqunlvlqvnt.supabase.co",
-  anonKey:
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZ3J2d3lrYnlxdW5sdmxxdm50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTg5MDMsImV4cCI6MjA4NjczNDkwM30.zbkzBmh-TIrhhpF0YL5QrvE765meEd4V5WoTkuorNGo",
+// Get configuration from environment variables or use defaults
+// In development: uses values from .env.local
+// In production (Vercel): uses environment variables set in Vercel dashboard
+const getSupabaseConfig = () => {
+  const url = process.env.VITE_SUPABASE_URL || window.__SUPABASE_URL__;
+  const anonKey =
+    process.env.VITE_SUPABASE_ANON_KEY || window.__SUPABASE_ANON_KEY__;
+
+  if (!url || !anonKey) {
+    throw new Error(
+      "Supabase configuration not found. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables."
+    );
+  }
+
+  return { url, anonKey };
 };
+
+let SUPABASE_CONFIG;
+try {
+  SUPABASE_CONFIG = getSupabaseConfig();
+} catch (error) {
+  console.warn("Warning:", error.message);
+  // Use placeholder values for dev - must be configured for production
+  SUPABASE_CONFIG = {
+    url: "https://bsgrvwykbyqunlvlqvnt.supabase.co",
+    anonKey:
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZ3J2d3lrYnlxdW5sdmxxdm50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTg5MDMsImV4cCI6MjA4NjczNDkwM30.zbkzBmh-TIrhhpF0YL5QrvE765meEd4V5WoTkuorNGo",
+  };
+}
 
 // Initialize Supabase client
 try {
   console.log("Initializing Supabase client...");
   console.log("Supabase URL:", SUPABASE_CONFIG.url);
-  console.log("Anon key available:", !!SUPABASE_CONFIG.anonKey);
+  console.log("Anon key configured:", !!SUPABASE_CONFIG.anonKey);
 
   // Check if Supabase library is loaded (check the global window object)
   if (typeof window.supabase === "undefined") {
@@ -22,7 +47,7 @@ try {
   // Create the supabase client using the global library
   const supabaseClient = window.supabase.createClient(
     SUPABASE_CONFIG.url,
-    SUPABASE_CONFIG.anonKey,
+    SUPABASE_CONFIG.anonKey
   );
 
   // Make it globally available
@@ -69,7 +94,7 @@ const Auth = {
       // For development: Auto-signin after signup to bypass email confirmation
       if (data.user && !data.user.email_confirmed_at) {
         console.log(
-          "User created but not confirmed, attempting auto sign-in...",
+          "User created but not confirmed, attempting auto sign-in..."
         );
         try {
           const { data: signInData, error: signInError } =
