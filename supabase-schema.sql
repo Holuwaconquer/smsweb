@@ -1,4 +1,4 @@
--- Supabase SQL Schema for Basedsms
+-- Supabase SQL Schema for Femzy
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

@@ -556,7 +556,7 @@ function initializeUI() {
     contactLink.addEventListener("click", (e) => {
       e.preventDefault();
       const whatsappNumber = "2349012726301"; // +234 901 272 6301
-      const message = encodeURIComponent("Hello, I need help with Basedsms");
+      const message = encodeURIComponent("Hello, I need help with Femzy");
       window.open(`https://wa.me/${whatsappNumber}?text=${message}`, "_blank");
     });
   }

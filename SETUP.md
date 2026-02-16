@@ -1,6 +1,7 @@
-# 🚀 Basedsms Complete Setup Guide
+# 🚀 Femzy Complete Setup Guide
 
 ## 📋 Table of Contents
+
 1. [Supabase Setup](#supabase-setup)
 2. [Paystack Setup](#paystack-setup)
 3. [Configuration](#configuration)
@@ -13,6 +14,7 @@
 ## 🔧 Supabase Setup
 
 ### Step 1: Create Supabase Project
+
 1. Go to [https://supabase.com](https://supabase.com)
 2. Click "Start your project"
 3. Sign in with GitHub
@@ -20,12 +22,14 @@
 5. Choose a name, database password, and region
 
 ### Step 2: Run SQL Schema
+
 1. In your Supabase dashboard, go to **SQL Editor**
 2. Copy the entire content from `supabase-schema.sql`
 3. Paste and click **RUN**
 4. Wait for all tables to be created
 
 ### Step 3: Get API Credentials
+
 1. Go to **Settings** > **API**
 2. Copy your **Project URL**
 3. Copy your **anon/public key**
@@ -36,11 +40,13 @@
 ## 💳 Paystack Setup
 
 ### Step 1: Create Paystack Account
+
 1. Go to [https://paystack.com](https://paystack.com)
 2. Sign up for an account
 3. Verify your business (or use test mode)
 
 ### Step 2: Get API Keys
+
 1. Go to **Settings** > **API Keys & Webhooks**
 2. Copy your **Public Key** (starts with `pk_`)
 3. For production, you'll also need the **Secret Key**
@@ -53,15 +59,15 @@
 
 ```javascript
 const SUPABASE_CONFIG = {
-    url: 'YOUR_SUPABASE_URL', // Replace with your URL
-    anonKey: 'YOUR_SUPABASE_ANON_KEY' // Replace with your anon key
+  url: "YOUR_SUPABASE_URL", // Replace with your URL
+  anonKey: "YOUR_SUPABASE_ANON_KEY", // Replace with your anon key
 };
 ```
 
 ### Update Paystack Config (`js/supabase-config.js`)
 
 ```javascript
-const PAYSTACK_PUBLIC_KEY = 'pk_test_xxxxxxxxxxxxx'; // Replace with your public key
+const PAYSTACK_PUBLIC_KEY = "pk_test_xxxxxxxxxxxxx"; // Replace with your public key
 ```
 
 ---
@@ -69,7 +75,7 @@ const PAYSTACK_PUBLIC_KEY = 'pk_test_xxxxxxxxxxxxx'; // Replace with your public
 ## 📁 File Structure
 
 ```
-basedsms-website/
+Femzy-website/
 ├── index.html              # Homepage
 ├── auth.html               # Login/Signup (combined)
 ├── supabase-schema.sql     # Database schema
@@ -103,6 +109,7 @@ basedsms-website/
 ## ✨ Features Implemented
 
 ### 🔐 Authentication (Supabase)
+
 - ✅ User registration with email/password
 - ✅ User login
 - ✅ Session management
@@ -110,6 +117,7 @@ basedsms-website/
 - ✅ Logout functionality
 
 ### 💰 Wallet & Payments (Paystack)
+
 - ✅ Balance display
 - ✅ Add funds via Paystack
 - ✅ Transaction history
@@ -117,6 +125,7 @@ basedsms-website/
 - ✅ Nigerian Naira (NGN) currency
 
 ### 📱 SMS Services
+
 - ✅ USA Numbers
 - ✅ Global numbers (50+ countries)
 - ✅ Service selection
@@ -124,6 +133,7 @@ basedsms-website/
 - ✅ Number activation
 
 ### 📊 Dashboard
+
 - ✅ Stats cards (Balance, Messages, Spent)
 - ✅ Quick access cards
 - ✅ Usage history table
@@ -131,6 +141,7 @@ basedsms-website/
 - ✅ Dark/Light theme toggle
 
 ### 👤 Profile Management
+
 - ✅ Update username
 - ✅ Update email
 - ✅ Change password
@@ -138,6 +149,7 @@ basedsms-website/
 - ✅ Logout option
 
 ### 💬 Support
+
 - ✅ AI chatbot for FAQs
 - ✅ WhatsApp contact integration
 - ✅ Help center links
@@ -151,10 +163,11 @@ The Contact Us link opens WhatsApp with a pre-filled message:
 **Phone Number:** +234 901 272 6301
 
 **How it works:**
+
 ```javascript
-const whatsappNumber = '2349012726301';
-const message = encodeURIComponent('Hello, I need help with Basedsms');
-window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
+const whatsappNumber = "2349012726301";
+const message = encodeURIComponent("Hello, I need help with Femzy");
+window.open(`https://wa.me/${whatsappNumber}?text=${message}`, "_blank");
 ```
 
 ---
@@ -162,11 +175,13 @@ window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
 ## 🎨 Theme System
 
 ### Dark Mode
+
 - Stored in localStorage
 - Syncs across all pages
 - Toggle button in navigation
 
 ### Mobile Responsive
+
 - Hamburger menu on mobile (<768px)
 - Collapsible sidebar
 - Touch-friendly buttons
@@ -177,11 +192,13 @@ window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
 ## 🔒 Security Features
 
 ### Row Level Security (RLS)
+
 - Users can only see their own data
 - Policies enforced at database level
 - Secure by default
 
 ### Authentication
+
 - Secure password hashing (Supabase)
 - Session management
 - Auto-logout on session expiry
@@ -191,16 +208,19 @@ window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
 ## 🚀 Deployment
 
 ### Option 1: Vercel (Recommended)
+
 1. Push code to GitHub
 2. Import project to Vercel
 3. Deploy automatically
 
 ### Option 2: Netlify
+
 1. Drag and drop folder to Netlify
 2. Configure build settings
 3. Deploy
 
 ### Option 3: Traditional Hosting
+
 1. Upload files via FTP
 2. Ensure HTTPS is enabled
 3. Configure domain
@@ -210,17 +230,21 @@ window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
 ## 📝 Important Notes
 
 ### Environment Variables
+
 For production, use environment variables instead of hardcoding:
+
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`
 - `PAYSTACK_PUBLIC_KEY`
 
 ### Test Mode
+
 - Use Paystack test keys during development
 - Test cards: 4084084084084081 (success)
 - Switch to live keys for production
 
 ### Database Backups
+
 - Enable automatic backups in Supabase
 - Export data regularly
 
@@ -229,16 +253,19 @@ For production, use environment variables instead of hardcoding:
 ## 🐛 Troubleshooting
 
 ### Authentication Not Working
+
 1. Check Supabase URL and keys
 2. Verify email confirmations are enabled
 3. Check browser console for errors
 
 ### Paystack Payments Failing
+
 1. Verify public key is correct
 2. Check if in test/live mode
 3. Verify Paystack account is active
 
 ### Database Errors
+
 1. Verify SQL schema ran successfully
 2. Check RLS policies are enabled
 3. Ensure user permissions are correct
@@ -248,8 +275,9 @@ For production, use environment variables instead of hardcoding:
 ## 📧 Support
 
 For issues or questions:
+
 - **WhatsApp:** +234 901 272 6301
-- **Email:** support@basedsms.com (configure your own)
+- **Email:** support@Femzy.com (configure your own)
 - **GitHub Issues:** Create an issue in your repo
 
 ---
@@ -274,7 +302,8 @@ For issues or questions:
 
 ## 🎉 You're All Set!
 
-Your Basedsms platform is ready to launch. Remember to:
+Your Femzy platform is ready to launch. Remember to:
+
 1. Test thoroughly before going live
 2. Start with test mode for payments
 3. Monitor error logs regularly

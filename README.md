@@ -1,11 +1,11 @@
-# Basedsms Website
+# Femzy Website
 
 A modern, responsive SMS verification service website with separate CSS and JavaScript files for easy maintenance.
 
 ## 📁 File Structure
 
 ```
-basedsms-website/
+Femzy-website/
 │
 ├── index.html          # Homepage
 ├── auth.html           # Combined Login & Signup page
@@ -25,6 +25,7 @@ basedsms-website/
 ## 🚀 Features
 
 ### Homepage (index.html)
+
 - Responsive navigation with theme toggle
 - Hero section with CTA buttons
 - Features grid showcasing 4 key benefits
@@ -42,6 +43,7 @@ basedsms-website/
 - Floating chat button
 
 ### Auth Page (auth.html)
+
 - **Combined Login & Signup in one page** with tab switching
 - Login form with:
   - Email and password fields
@@ -75,13 +77,14 @@ The chat button opens an intelligent assistant that can answer questions about:
 
 - **Services**: SMS Verification, Logs, Social Media Booster, Phone Numbers
 - **Pricing**: Plans, costs, and payment options
-- **Features**: What makes Basedsms unique
+- **Features**: What makes Femzy unique
 - **Support**: How to get help and contact support
 - **Getting Started**: How to sign up and use services
 - **Security**: Privacy and data protection information
 - **Coverage**: Available countries and global reach
 
 ### Chatbot Capabilities:
+
 - Natural language understanding
 - Context-aware responses
 - Quick reply buttons for common questions
@@ -92,6 +95,7 @@ The chat button opens an intelligent assistant that can answer questions about:
 - Dark mode support
 
 ### Example Questions You Can Ask:
+
 - "Tell me about SMS verification"
 - "What are your prices?"
 - "Which countries do you support?"
@@ -140,6 +144,7 @@ Auth Page (auth.html)
 ## 💻 Browser Support
 
 Works on all modern browsers:
+
 - Chrome/Edge (latest)
 - Firefox (latest)
 - Safari (latest)
@@ -148,12 +153,14 @@ Works on all modern browsers:
 ## 🎨 Customization
 
 ### Colors
+
 Main brand color: `#00d4aa` (Teal/Turquoise)
 Secondary color: `#00b894`
 
 To change colors, update the gradient values in the CSS files.
 
 ### Adding More Services to Carousel
+
 Edit `js/home.js` and add more objects to the `servicesData` array.
 
 ## 📝 Notes
@@ -166,6 +173,7 @@ Edit `js/home.js` and add more objects to the `servicesData` array.
 ## 🚀 Next Steps
 
 To make this fully functional:
+
 1. Connect forms to your backend API
 2. Add real authentication logic
 3. Create dashboard pages
@@ -173,4 +181,4 @@ To make this fully functional:
 
 ---
 
-Created with ❤️ for Basedsms
+Created with ❤️ for Femzy

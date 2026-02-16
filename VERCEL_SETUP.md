@@ -1,6 +1,6 @@
 # Vercel Deployment Setup Guide
 
-This guide explains how to securely deploy the BasedSMS application to Vercel with environment variables.
+This guide explains how to securely deploy the Femzy application to Vercel with environment variables.
 
 ## Local Development Setup
 

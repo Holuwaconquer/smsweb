@@ -1,5 +1,5 @@
 -- ============================================
--- BASEDSMS - COMPLETE DATABASE SCHEMA
+-- Femzy - COMPLETE DATABASE SCHEMA
 -- Enhanced Version with Admin Features
 -- ============================================
 
