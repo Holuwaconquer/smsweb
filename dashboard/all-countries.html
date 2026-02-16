@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>International Numbers - BasedSMS</title>
+    <link rel="stylesheet" href="../css/dashboard.css" />
+    <style>
+      .search-controls {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 25px;
+      }
+
+      .control-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+      }
+
+      .control-item label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #333;
+      }
+
+      .control-item select,
+      .control-item input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+        font-family: inherit;
+      }
+
+      .control-item select:focus,
+      .control-item input:focus {
+        outline: none;
+        border-color: #2196f3;
+        box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+      }
+
+      .btn-search {
+        background: #2196f3;
+        color: white;
+        padding: 10px 25px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: background 0.3s;
+        align-self: flex-end;
+      }
+
+      .btn-search:hover {
+        background: #1976d2;
+      }
+
+      .results-container {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .results-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+        margin-bottom: 25px;
+      }
+
+      .number-card {
+        background: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+        border: 2px solid #e0e0e0;
+        transition: all 0.3s;
+      }
+
+      .number-card:hover {
+        border-color: #2196f3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+      }
+
+      .number-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 12px;
+      }
+
+      .country-flag {
+        font-size: 24px;
+        margin-right: 10px;
+      }
+
+      .country-info h3 {
+        margin: 0;
+        font-size: 16px;
+        color: #333;
+      }
+
+      .country-info p {
+        margin: 4px 0 0 0;
+        font-size: 12px;
+        color: #666;
+      }
+
+      .number-text {
+        font-size: 18px;
+        font-weight: bold;
+        color: #2196f3;
+        margin: 12px 0;
+        word-break: break-all;
+      }
+
+      .number-details {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 12px;
+        padding: 10px;
+        background: #f0f0f0;
+        border-radius: 4px;
+      }
+
+      .price-tag {
+        background: #e8f5e9;
+        color: #2e7d32;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        display: inline-block;
+      }
+
+      .btn-buy {
+        background: #4caf50;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        width: 100%;
+        transition: background 0.3s;
+      }
+
+      .btn-buy:hover {
+        background: #45a049;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #999;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 40px 20px;
+      }
+
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #2196f3;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .filter-badge {
+        display: inline-block;
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        margin-right: 8px;
+        margin-bottom: 8px;
+      }
+
+      .active-numbers-section {
+        margin-top: 40px;
+        padding-top: 25px;
+        border-top: 2px solid #f0f0f0;
+      }
+
+      .active-numbers-section h2 {
+        margin-top: 0;
+        color: #333;
+      }
+
+      .number-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+      }
+
+      .number-table th {
+        background: #f5f5f5;
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid #ddd;
+      }
+
+      .number-table td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+      }
+
+      .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .status-active {
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
+
+      .status-expired {
+        background: #ffebee;
+        color: #c62828;
+      }
+
+      .btn-copy {
+        background: #2196f3;
+        color: white;
+        padding: 6px 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+
+      .btn-delete {
+        background: #f44336;
+        color: white;
+        padding: 6px 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        margin-left: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard-wrapper">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="logo">BasedSMS</div>
+        <nav class="nav-menu">
+          <a href="index.html" class="nav-link">Dashboard</a>
+          <a href="usa-numbers.html" class="nav-link">Buy USA Numbers</a>
+          <a href="all-countries.html" class="nav-link active"
+            >International Numbers</a
+          >
+          <a href="logs.html" class="nav-link">Buy Logs</a>
+          <a href="booster.html" class="nav-link">Social Booster</a>
+          <a href="inbox.html" class="nav-link">SMS Inbox</a>
+          <a href="history.html" class="nav-link">History</a>
+          <a href="wallet.html" class="nav-link">Wallet</a>
+          <a href="profile.html" class="nav-link">Profile</a>
+        </nav>
+        <div class="sidebar-footer">
+          <button id="logoutBtn" class="btn-logout">Logout</button>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <header class="top-bar">
+          <div class="hamburger" id="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div class="header-right">
+            <div class="balance-display">
+              Balance: <strong id="balanceDisplay">₦0.00</strong>
+            </div>
+            <div class="user-menu">
+              <span id="username">User</span>
+            </div>
+          </div>
+        </header>
+
+        <div class="content">
+          <h1>International Phone Numbers</h1>
+          <p>Purchase phone numbers from 50+ countries for SMS verification</p>
+
+          <div class="search-controls">
+            <div class="control-group">
+              <div class="control-item">
+                <label for="countrySelect">Country</label>
+                <select id="countrySelect">
+                  <option value="">Select a country</option>
+                  <option value="US">🇺🇸 United States</option>
+                  <option value="GB">🇬🇧 United Kingdom</option>
+                  <option value="CA">🇨🇦 Canada</option>
+                  <option value="DE">🇩🇪 Germany</option>
+                  <option value="FR">🇫🇷 France</option>
+                  <option value="ES">🇪🇸 Spain</option>
+                  <option value="IT">🇮🇹 Italy</option>
+                  <option value="NG">🇳🇬 Nigeria</option>
+                  <option value="IN">🇮🇳 India</option>
+                  <option value="AU">🇦🇺 Australia</option>
+                  <option value="JP">🇯🇵 Japan</option>
+                  <option value="CN">🇨🇳 China</option>
+                  <option value="BR">🇧🇷 Brazil</option>
+                  <option value="ZA">🇿🇦 South Africa</option>
+                  <option value="MX">🇲🇽 Mexico</option>
+                </select>
+              </div>
+              <div class="control-item">
+                <label for="serviceSelect">Service</label>
+                <select id="serviceSelect">
+                  <option value="">All Services</option>
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="telegram">Telegram</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="facebook">Facebook</option>
+                  <option value="twitter">Twitter</option>
+                  <option value="google">Google</option>
+                </select>
+              </div>
+              <div class="control-item">
+                <label for="maxPrice">Max Price (₦)</label>
+                <input
+                  type="number"
+                  id="maxPrice"
+                  placeholder="e.g. 500"
+                  min="0"
+                />
+              </div>
+            </div>
+            <div class="control-group" style="grid-template-columns: 1fr">
+              <button class="btn-search" onclick="searchNumbers()">
+                Search Numbers
+              </button>
+            </div>
+          </div>
+
+          <div class="results-container">
+            <div id="activeFilters"></div>
+            <div id="resultsContainer"></div>
+            <div class="active-numbers-section">
+              <h2>Your Active Numbers</h2>
+              <div id="activeNumbersContainer"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/dashboard.js"></script>
+    <script>
+      let currentUser = null;
+
+      const countryPrices = {
+        US: { name: "United States", basePrice: 200 },
+        GB: { name: "United Kingdom", basePrice: 250 },
+        CA: { name: "Canada", basePrice: 220 },
+        DE: { name: "Germany", basePrice: 280 },
+        FR: { name: "France", basePrice: 270 },
+        ES: { name: "Spain", basePrice: 260 },
+        IT: { name: "Italy", basePrice: 265 },
+        NG: { name: "Nigeria", basePrice: 150 },
+        IN: { name: "India", basePrice: 120 },
+        AU: { name: "Australia", basePrice: 300 },
+        JP: { name: "Japan", basePrice: 350 },
+        CN: { name: "China", basePrice: 180 },
+        BR: { name: "Brazil", basePrice: 240 },
+        ZA: { name: "South Africa", basePrice: 200 },
+        MX: { name: "Mexico", basePrice: 190 },
+      };
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        if (!(await checkAuth())) return;
+        const { user } = await getCurrentUser();
+        currentUser = user;
+        document.getElementById("username").textContent =
+          user.email.split("@")[0];
+        loadBalance();
+        loadActiveNumbers();
+      });
+
+      async function searchNumbers() {
+        const country = document.getElementById("countrySelect").value;
+        const service = document.getElementById("serviceSelect").value;
+        const maxPrice =
+          parseFloat(document.getElementById("maxPrice").value) || 500;
+
+        if (!country) {
+          showError("Please select a country");
+          return;
+        }
+
+        const container = document.getElementById("resultsContainer");
+        container.innerHTML =
+          '<div class="loading"><div class="spinner"></div></div>';
+
+        // Display active filters
+        const filterDiv = document.getElementById("activeFilters");
+        filterDiv.innerHTML = `
+                <div class="filter-badge">Country: ${
+                  countryPrices[country].name
+                }</div>
+                ${
+                  service
+                    ? `<div class="filter-badge">Service: ${service}</div>`
+                    : ""
+                }
+                <div class="filter-badge">Max Price: ₦${maxPrice}</div>
+            `;
+
+        // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 800));
+
+        const basePrice = countryPrices[country].basePrice;
+        const mockNumbers = generateMockNumbers(country, 6);
+
+        if (mockNumbers.length === 0) {
+          container.innerHTML =
+            '<div class="empty-state">No numbers available matching your criteria</div>';
+          return;
+        }
+
+        let html = '<div class="results-grid">';
+
+        mockNumbers.forEach((num) => {
+          const serviceForCard = service || "whatsapp";
+          const price = basePrice;
+
+          html += `
+                    <div class="number-card">
+                        <div class="number-header">
+                            <div class="country-info">
+                                <h3>${countryPrices[country].name}</h3>
+                                <p>${serviceForCard.toUpperCase()}</p>
+                            </div>
+                        </div>
+                        <div class="number-text">${num}</div>
+                        <div class="number-details">
+                            <strong>Expires in:</strong> 30 days
+                        </div>
+                        <div class="price-tag">₦${price}</div>
+                        <button class="btn-buy" onclick="buyNumber('${num}', '${
+            countryPrices[country].name
+          }', '${country}', '${serviceForCard}', ${price})">
+                            Buy Now
+                        </button>
+                    </div>
+                `;
+        });
+
+        html += "</div>";
+        container.innerHTML = html;
+      }
+
+      function generateMockNumbers(country, count) {
+        const countryDialCodes = {
+          US: "1",
+          GB: "44",
+          CA: "1",
+          DE: "49",
+          FR: "33",
+          ES: "34",
+          IT: "39",
+          NG: "234",
+          IN: "91",
+          AU: "61",
+          JP: "81",
+          CN: "86",
+          BR: "55",
+          ZA: "27",
+          MX: "52",
+        };
+
+        const numbers = [];
+        const prefix = countryDialCodes[country] || "1";
+
+        for (let i = 0; i < count; i++) {
+          const num =
+            "+" +
+            prefix +
+            Math.floor(Math.random() * 9000000000 + 1000000000)
+              .toString()
+              .substring(0, 9);
+          numbers.push(num);
+        }
+        return numbers;
+      }
+
+      async function buyNumber(
+        phoneNumber,
+        countryName,
+        countryCode,
+        service,
+        price
+      ) {
+        const wallet = await getWallet(currentUser.id);
+
+        if (wallet.balance < price) {
+          showError(
+            `Insufficient balance. You need ₦${price} but have ₦${wallet.balance}`
+          );
+          return;
+        }
+
+        try {
+          await updateWallet(currentUser.id, wallet.balance - price);
+          await createTransaction(
+            currentUser.id,
+            "debit",
+            price,
+            `Purchased ${service} number in ${countryName}: ${phoneNumber}`,
+            "sms_number_purchase"
+          );
+          await addSMSNumber(
+            currentUser.id,
+            phoneNumber,
+            countryName,
+            countryCode,
+            service,
+            price
+          );
+
+          showSuccess(`Number purchased! ${phoneNumber}`);
+          loadBalance();
+          loadActiveNumbers();
+          document.getElementById("countrySelect").value = "";
+          document.getElementById("serviceSelect").value = "";
+          document.getElementById("maxPrice").value = "";
+          document.getElementById("activeFilters").innerHTML = "";
+          document.getElementById("resultsContainer").innerHTML = "";
+        } catch (error) {
+          console.error("Purchase error:", error);
+          showError("Purchase failed. Please try again.");
+        }
+      }
+
+      async function loadActiveNumbers() {
+        try {
+          const numbers = await getSMSNumbers(currentUser.id);
+          const container = document.getElementById("activeNumbersContainer");
+
+          if (numbers.length === 0) {
+            container.innerHTML =
+              '<div class="empty-state">No active numbers. Start by purchasing one!</div>';
+            return;
+          }
+
+          let html =
+            '<table class="number-table"><thead><tr><th>Number</th><th>Country</th><th>Service</th><th>Status</th><th>Expires</th><th>Actions</th></tr></thead><tbody>';
+
+          numbers.forEach((num) => {
+            const status =
+              new Date(num.expires_at) > new Date() ? "active" : "expired";
+            html += `
+                        <tr>
+                            <td><strong>${num.phone_number}</strong></td>
+                            <td>${num.country}</td>
+                            <td>${num.service}</td>
+                            <td><span class="status-badge status-${status}">${status}</span></td>
+                            <td>${new Date(
+                              num.expires_at
+                            ).toLocaleDateString()}</td>
+                            <td>
+                                <button class="btn-copy" onclick="copyToClipboard('${
+                                  num.phone_number
+                                }')">Copy</button>
+                                <button class="btn-delete" onclick="deleteNumber('${
+                                  num.id
+                                }')">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+          });
+
+          html += "</tbody></table>";
+          container.innerHTML = html;
+        } catch (error) {
+          console.error("Error loading active numbers:", error);
+        }
+      }
+
+      async function deleteNumber(numberId) {
+        if (!confirm("Delete this number?")) return;
+
+        try {
+          await deleteSMSNumber(numberId);
+          showSuccess("Number deleted");
+          loadActiveNumbers();
+        } catch (error) {
+          showError("Failed to delete number");
+        }
+      }
+
+      function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+          showSuccess("Copied to clipboard");
+        });
+      }
+
+      async function loadBalance() {
+        try {
+          const wallet = await getWallet(currentUser.id);
+          document.getElementById(
+            "balanceDisplay"
+          ).textContent = `₦${wallet.balance.toFixed(2)}`;
+        } catch (error) {
+          console.error("Error loading balance:", error);
+        }
+      }
+
+      function showSuccess(msg) {
+        alert("✓ " + msg);
+      }
+
+      function showError(msg) {
+        alert("✗ " + msg);
+      }
+
+      document.getElementById("hamburger").addEventListener("click", () => {
+        document.getElementById("hamburger").classList.toggle("active");
+        document.querySelector(".sidebar").classList.toggle("active");
+      });
+
+      document
+        .getElementById("logoutBtn")
+        .addEventListener("click", async () => {
+          await signOut();
+          window.location.href = "../auth.html";
+        });
+    </script>
+  </body>
+</html>

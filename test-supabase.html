@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Supabase Test</title>
+</head>
+<body>
+    <h1>Supabase Connection Test</h1>
+    <button onclick="testSupabase()">Test Supabase Connection</button>
+    <button onclick="testSignup()">Test Signup</button>
+    <div id="result"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_CONFIG = {
+            url: "https://bsgrvwykbyqunlvlqvnt.supabase.co",
+            anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZ3J2d3lrYnlxdW5sdmxxdm50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTg5MDMsImV4cCI6MjA4NjczNDkwM30.zbkzBmh-TIrhhpF0YL5QrvE765meEd4V5WoTkuorNGo"
+        };
+
+        let supabase;
+        try {
+            supabase = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+            console.log("Supabase client initialized successfully");
+            document.getElementById('result').innerHTML += "<p>✅ Supabase client initialized</p>";
+        } catch (error) {
+            console.error("Failed to initialize Supabase client:", error);
+            document.getElementById('result').innerHTML += "<p>❌ Failed to initialize Supabase: " + error.message + "</p>";
+        }
+
+        function testSupabase() {
+            console.log("Testing Supabase connection...");
+            document.getElementById('result').innerHTML += "<p>Testing connection...</p>";
+            
+            // Test by trying to get the current session
+            supabase.auth.getSession().then(({ data, error }) => {
+                if (error) {
+                    console.error("Connection test failed:", error);
+                    document.getElementById('result').innerHTML += "<p>❌ Connection failed: " + error.message + "</p>";
+                } else {
+                    console.log("Connection successful:", data);
+                    document.getElementById('result').innerHTML += "<p>✅ Connection successful!</p>";
+                }
+            });
+        }
+
+        async function testSignup() {
+            console.log("Testing signup...");
+            document.getElementById('result').innerHTML += "<p>Testing signup with test@example.com...</p>";
+            
+            try {
+                const { data, error } = await supabase.auth.signUp({
+                    email: 'test' + Date.now() + '@example.com',
+                    password: 'testpassword123',
+                    options: {
+                        data: {
+                            username: 'testuser' + Date.now()
+                        }
+                    }
+                });
+
+                console.log("Signup test result:", { data, error });
+                
+                if (error) {
+                    document.getElementById('result').innerHTML += "<p>❌ Signup failed: " + error.message + "</p>";
+                } else {
+                    document.getElementById('result').innerHTML += "<p>✅ Signup successful! User created.</p>";
+                }
+            } catch (error) {
+                console.error("Signup test error:", error);
+                document.getElementById('result').innerHTML += "<p>❌ Signup error: " + error.message + "</p>";
+            }
+        }
+    </script>
+</body>
+</html>

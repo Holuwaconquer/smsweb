@@ -8,16 +8,45 @@ const SUPABASE_CONFIG = {
 };
 
 // Initialize Supabase client
-const supabase = supabase.createClient(
-  SUPABASE_CONFIG.url,
-  SUPABASE_CONFIG.anonKey
-);
+try {
+  console.log("Initializing Supabase client...");
+  console.log("Supabase URL:", SUPABASE_CONFIG.url);
+  console.log("Anon key available:", !!SUPABASE_CONFIG.anonKey);
+
+  // Check if Supabase library is loaded (check the global window object)
+  if (typeof window.supabase === "undefined") {
+    console.error("Supabase library not loaded!");
+    throw new Error("Supabase library not loaded");
+  }
+
+  // Create the supabase client using the global library
+  const supabaseClient = window.supabase.createClient(
+    SUPABASE_CONFIG.url,
+    SUPABASE_CONFIG.anonKey,
+  );
+
+  // Make it globally available
+  window.supabase = supabaseClient;
+  console.log("Supabase client initialized successfully");
+} catch (error) {
+  console.error("Failed to initialize Supabase client:", error);
+  // Create a dummy supabase object to prevent further errors
+  window.supabase = {
+    auth: {
+      signUp: async () => ({ error: { message: "Supabase not initialized" } }),
+      signInWithPassword: async () => ({
+        error: { message: "Supabase not initialized" },
+      }),
+    },
+  };
+}
 
 // Auth Helper Functions
 const Auth = {
   // Sign up new user
   async signUp(email, password, username) {
     try {
+      console.log("Starting signup process for:", email);
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -25,12 +54,62 @@ const Auth = {
           data: {
             username: username,
           },
+          emailRedirectTo: window.location.origin + "/auth.html",
         },
       });
 
-      if (error) throw error;
+      console.log("Supabase signup response:", { data, error });
+
+      if (error) {
+        console.error("Supabase signup error:", error);
+        throw error;
+      }
+      console.log("Signup successful:", data);
+
+      // For development: Auto-signin after signup to bypass email confirmation
+      if (data.user && !data.user.email_confirmed_at) {
+        console.log(
+          "User created but not confirmed, attempting auto sign-in...",
+        );
+        try {
+          const { data: signInData, error: signInError } =
+            await supabase.auth.signInWithPassword({
+              email,
+              password,
+            });
+
+          if (signInError) {
+            console.log("Auto sign-in failed (expected):", signInError.message);
+            return {
+              success: true,
+              data,
+              needsConfirmation: true,
+              message:
+                "Account created! Please check your email to confirm, then try signing in.",
+            };
+          }
+
+          console.log("Auto sign-in successful!");
+          return {
+            success: true,
+            data: signInData,
+            autoSignedIn: true,
+            message: "Account created and signed in successfully! ",
+          };
+        } catch (autoSignInError) {
+          console.log("Auto sign-in error:", autoSignInError);
+          return {
+            success: true,
+            data,
+            needsConfirmation: true,
+            message: "Account created! Please check your email to confirm.",
+          };
+        }
+      }
+
       return { success: true, data };
     } catch (error) {
+      console.error("Auth.signUp error:", error);
       return { success: false, error: error.message };
     }
   },
@@ -38,14 +117,22 @@ const Auth = {
   // Sign in user
   async signIn(email, password) {
     try {
+      console.log("Starting signin process for:", email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      console.log("Supabase signin response:", { data, error });
+
+      if (error) {
+        console.error("Supabase signin error:", error);
+        return { success: false, error: error.message };
+      }
+      console.log("Signin successful:", data);
       return { success: true, data };
     } catch (error) {
+      console.error("Auth.signIn error:", error);
       return { success: false, error: error.message };
     }
   },
@@ -83,6 +170,10 @@ const Auth = {
     return session !== null;
   },
 };
+
+// Make Auth globally available
+window.Auth = Auth;
+console.log("Auth object created and made globally available");
 
 // Database Helper Functions
 const DB = {

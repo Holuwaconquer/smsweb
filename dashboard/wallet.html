@@ -1,217 +1,269 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Wallet - Basedsms</title>
-    <link rel="stylesheet" href="../css/dashboard.css">
-    <link rel="stylesheet" href="../css/chatbot.css">
-</head>
-<body>
-    <!-- Mobile Header -->
-    <div class="mobile-header">
-        <div class="mobile-time" id="mobileTime">10:04</div>
-        <div class="mobile-icons">
-            <span>🎧</span>
-            <span>📶</span>
-            <span>🔋</span>
-        </div>
-    </div>
-
+    <link rel="stylesheet" href="../css/dashboard.css" />
+    <link rel="stylesheet" href="../css/chatbot.css" />
+  </head>
+  <body>
     <!-- Top Navigation -->
     <nav class="top-nav">
-        <div class="nav-left">
-            <div class="hamburger" id="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-            <div class="logo">
-                <div class="logo-icon">B</div>
-                <span>Basedsms</span>
-            </div>
-            <div class="nav-links">
-                <a href="index.html" class="nav-link">🏠 Dashboard</a>
-                <a href="wallet.html" class="nav-link active">💰 Wallet</a>
-            </div>
+      <div class="nav-left">
+        <div class="hamburger" id="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
-        <div class="nav-right">
-            <div class="balance-badge" id="balanceDisplay">₦0.00</div>
-            <button class="theme-toggle" id="themeToggle">🌙</button>
+        <div class="logo">
+          <div class="logo-icon">B</div>
+          <span>Basedsms</span>
         </div>
+        <div class="nav-links">
+          <a href="index.html" class="nav-link">🏠 Dashboard</a>
+          <a href="wallet.html" class="nav-link active">💰 Wallet</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <div class="balance-badge" id="balanceDisplay">₦0.00</div>
+        <button class="theme-toggle" id="themeToggle">🌙</button>
+      </div>
     </nav>
 
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar-section">
-            <div class="sidebar-title">Menu</div>
-            <a href="index.html" class="sidebar-link">
-                <span class="sidebar-icon">🏠</span>
-                <span>Dashboard</span>
-            </a>
-            <a href="wallet.html" class="sidebar-link active">
-                <span class="sidebar-icon">💰</span>
-                <span>Wallet</span>
-            </a>
-            <a href="profile.html" class="sidebar-link">
-                <span class="sidebar-icon">👤</span>
-                <span>Profile</span>
-            </a>
-            <a href="#" class="sidebar-link" id="contactLink">
-                <span class="sidebar-icon">📞</span>
-                <span>Contact Us</span>
-            </a>
-        </div>
-        <div class="sidebar-section">
-            <div class="sidebar-title">Account</div>
-            <a href="#" class="sidebar-link" id="logoutBtn">
-                <span class="sidebar-icon">🚪</span>
-                <span>Log Out</span>
-            </a>
-        </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Menu</div>
+        <a href="index.html" class="sidebar-link">
+          <span class="sidebar-icon">🏠</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="wallet.html" class="sidebar-link active">
+          <span class="sidebar-icon">💰</span>
+          <span>Wallet</span>
+        </a>
+        <a href="profile.html" class="sidebar-link">
+          <span class="sidebar-icon">👤</span>
+          <span>Profile</span>
+        </a>
+        <a href="#" class="sidebar-link" id="contactLink">
+          <span class="sidebar-icon">📞</span>
+          <span>Contact Us</span>
+        </a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Account</div>
+        <a href="#" class="sidebar-link" id="logoutBtn">
+          <span class="sidebar-icon">🚪</span>
+          <span>Log Out</span>
+        </a>
+      </div>
     </aside>
 
     <!-- Main Content -->
     <main class="main-content">
-        <div class="page-header">
-            <h1>Wallet</h1>
-            <p>Manage your balance and view transaction history</p>
+      <div class="page-header">
+        <h1>Wallet</h1>
+        <p>Manage your balance and view transaction history</p>
+      </div>
+
+      <!-- Balance Card -->
+      <div
+        class="content-section"
+        style="
+          background: linear-gradient(135deg, #00d4aa, #00b894);
+          color: white;
+          padding: 40px;
+        "
+      >
+        <h2 style="font-size: 16px; margin-bottom: 15px; opacity: 0.9">
+          Current Balance
+        </h2>
+        <div
+          style="font-size: 48px; font-weight: 700; margin-bottom: 20px"
+          id="walletBalance"
+        >
+          ₦0.00
+        </div>
+        <button
+          class="btn"
+          style="background: white; color: #00d4aa"
+          id="addFundsBtn"
+        >
+          + Add Funds
+        </button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-title">Total Added</span>
+            <div class="stat-icon" style="background: #e0f7f4; color: #00d4aa">
+              📈
+            </div>
+          </div>
+          <div class="stat-value" id="totalAdded">₦0.00</div>
+          <div class="stat-change positive">
+            <span>↗</span>
+            <span>All time</span>
+          </div>
         </div>
 
-        <!-- Balance Card -->
-        <div class="content-section" style="background: linear-gradient(135deg, #00d4aa, #00b894); color: white; padding: 40px;">
-            <h2 style="font-size: 16px; margin-bottom: 15px; opacity: 0.9;">Current Balance</h2>
-            <div style="font-size: 48px; font-weight: 700; margin-bottom: 20px;" id="walletBalance">₦0.00</div>
-            <button class="btn" style="background: white; color: #00d4aa;" id="addFundsBtn">
-                + Add Funds
-            </button>
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-title">Total Spent</span>
+            <div class="stat-icon" style="background: #fce4ec; color: #e91e63">
+              📉
+            </div>
+          </div>
+          <div class="stat-value" id="totalSpent">₦0</div>
+          <div class="stat-change">
+            <span>—</span>
+            <span>All time</span>
+          </div>
         </div>
+      </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-header">
-                    <span class="stat-title">Total Added</span>
-                    <div class="stat-icon" style="background: #e0f7f4; color: #00d4aa;">📈</div>
-                </div>
-                <div class="stat-value" id="totalAdded">₦0.00</div>
-                <div class="stat-change positive">
-                    <span>↗</span>
-                    <span>All time</span>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-header">
-                    <span class="stat-title">Total Spent</span>
-                    <div class="stat-icon" style="background: #fce4ec; color: #e91e63;">📉</div>
-                </div>
-                <div class="stat-value" id="totalSpent">₦0</div>
-                <div class="stat-change">
-                    <span>—</span>
-                    <span>All time</span>
-                </div>
-            </div>
+      <!-- Promo Code -->
+      <div class="content-section">
+        <h2 class="section-title">Have a Promo Code?</h2>
+        <div style="display: flex; gap: 10px; margin-top: 20px">
+          <input
+            type="text"
+            class="form-input"
+            placeholder="Enter promo code"
+            id="promoCodeInput"
+            style="flex: 1"
+          />
+          <button class="btn btn-primary" id="applyPromoBtn">Apply</button>
         </div>
+        <div id="promoMessage" style="margin-top: 10px; display: none"></div>
+      </div>
 
-        <!-- Promo Code -->
-        <div class="content-section">
-            <h2 class="section-title">Have a Promo Code?</h2>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <input 
-                    type="text" 
-                    class="form-input" 
-                    placeholder="Enter promo code" 
-                    id="promoCodeInput"
-                    style="flex: 1;"
-                >
-                <button class="btn btn-primary" id="applyPromoBtn">Apply</button>
-            </div>
-            <div id="promoMessage" style="margin-top: 10px; display: none;"></div>
+      <!-- Transaction History -->
+      <div class="content-section">
+        <div class="section-header">
+          <h2 class="section-title">Transaction History</h2>
         </div>
-
-        <!-- Transaction History -->
-        <div class="content-section">
-            <div class="section-header">
-                <h2 class="section-title">Transaction History</h2>
-            </div>
-            <div class="table-container" id="transactionsContainer">
-                <div class="empty-state">
-                    <div class="empty-state-icon">📋</div>
-                    <p>No transactions yet</p>
-                </div>
-            </div>
+        <div class="table-container" id="transactionsContainer">
+          <div class="empty-state">
+            <div class="empty-state-icon">📋</div>
+            <p>No transactions yet</p>
+          </div>
         </div>
+      </div>
     </main>
 
     <!-- Add Funds Modal -->
-    <div id="addFundsModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-        <div style="background: white; padding: 30px; border-radius: 16px; max-width: 400px; width: 90%;">
-            <h2 style="margin-bottom: 20px;">Add Funds</h2>
-            <div class="form-group">
-                <label class="form-label">Amount (₦)</label>
-                <input type="number" class="form-input" id="amountInput" placeholder="Enter amount" min="100">
-            </div>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn btn-secondary" id="cancelBtn" style="flex: 1;">Cancel</button>
-                <button class="btn btn-primary" id="payNowBtn" style="flex: 1;">Pay Now</button>
-            </div>
+    <div
+      id="addFundsModal"
+      style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+      "
+    >
+      <div
+        style="
+          background: white;
+          padding: 30px;
+          border-radius: 16px;
+          max-width: 400px;
+          width: 90%;
+        "
+      >
+        <h2 style="margin-bottom: 20px">Add Funds</h2>
+        <div class="form-group">
+          <label class="form-label">Amount (₦)</label>
+          <input
+            type="number"
+            class="form-input"
+            id="amountInput"
+            placeholder="Enter amount"
+            min="100"
+          />
         </div>
+        <div style="display: flex; gap: 10px; margin-top: 20px">
+          <button class="btn btn-secondary" id="cancelBtn" style="flex: 1">
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="payNowBtn" style="flex: 1">
+            Pay Now
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
+
     <!-- Paystack Inline JS -->
     <script src="https://js.paystack.co/v1/inline.js"></script>
-    
+
     <!-- Scripts -->
     <script src="../js/supabase-config.js"></script>
     <script src="../js/dashboard.js"></script>
     <script>
-        // Wallet specific functionality
-        let currentUser = null;
+      // Wallet specific functionality
+      let currentUser = null;
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            await checkAuth();
-            await loadWalletData();
-            initWalletUI();
-        });
+      document.addEventListener("DOMContentLoaded", async () => {
+        await checkAuth();
+        await loadWalletData();
+        initWalletUI();
+      });
 
-        async function checkAuth() {
-            const isAuth = await Auth.checkAuth();
-            if (!isAuth) {
-                window.location.href = '../auth.html';
-                return;
-            }
-            const { user } = await Auth.getCurrentUser();
-            currentUser = user;
+      async function checkAuth() {
+        const isAuth = await Auth.checkAuth();
+        if (!isAuth) {
+          window.location.href = "../auth.html";
+          return;
+        }
+        const { user } = await Auth.getCurrentUser();
+        currentUser = user;
+      }
+
+      async function loadWalletData() {
+        if (!currentUser) return;
+
+        const result = await DB.getWallet(currentUser.id);
+        if (result.success) {
+          const wallet = result.data;
+          document.getElementById(
+            "walletBalance"
+          ).textContent = `₦${wallet.balance.toFixed(2)}`;
+          document.getElementById(
+            "balanceDisplay"
+          ).textContent = `₦${wallet.balance.toFixed(2)}`;
+          document.getElementById(
+            "totalAdded"
+          ).textContent = `₦${wallet.total_added.toFixed(2)}`;
+          document.getElementById(
+            "totalSpent"
+          ).textContent = `₦${wallet.total_spent.toFixed(2)}`;
         }
 
-        async function loadWalletData() {
-            if (!currentUser) return;
+        await loadTransactions();
+      }
 
-            const result = await DB.getWallet(currentUser.id);
-            if (result.success) {
-                const wallet = result.data;
-                document.getElementById('walletBalance').textContent = `₦${wallet.balance.toFixed(2)}`;
-                document.getElementById('balanceDisplay').textContent = `₦${wallet.balance.toFixed(2)}`;
-                document.getElementById('totalAdded').textContent = `₦${wallet.total_added.toFixed(2)}`;
-                document.getElementById('totalSpent').textContent = `₦${wallet.total_spent.toFixed(2)}`;
-            }
-
-            await loadTransactions();
+      async function loadTransactions() {
+        const result = await DB.getTransactions(currentUser.id);
+        if (result.success && result.data.length > 0) {
+          displayTransactions(result.data);
         }
+      }
 
-        async function loadTransactions() {
-            const result = await DB.getTransactions(currentUser.id);
-            if (result.success && result.data.length > 0) {
-                displayTransactions(result.data);
-            }
-        }
-
-        function displayTransactions(transactions) {
-            const container = document.getElementById('transactionsContainer');
-            container.innerHTML = `
+      function displayTransactions(transactions) {
+        const container = document.getElementById("transactionsContainer");
+        container.innerHTML = `
                 <table>
                     <thead>
                         <tr>
@@ -223,73 +275,98 @@
                         </tr>
                     </thead>
                     <tbody>
-                        ${transactions.map(t => `
+                        ${transactions
+                          .map(
+                            (t) => `
                             <tr>
-                                <td>${new Date(t.created_at).toLocaleDateString()}</td>
-                                <td>${t.type === 'credit' ? '➕ Credit' : '➖ Debit'}</td>
-                                <td>${t.description || 'N/A'}</td>
-                                <td style="color: ${t.type === 'credit' ? '#00d4aa' : '#ff4757'}">
-                                    ${t.type === 'credit' ? '+' : '-'}₦${t.amount.toFixed(2)}
+                                <td>${new Date(
+                                  t.created_at
+                                ).toLocaleDateString()}</td>
+                                <td>${
+                                  t.type === "credit" ? "➕ Credit" : "➖ Debit"
+                                }</td>
+                                <td>${t.description || "N/A"}</td>
+                                <td style="color: ${
+                                  t.type === "credit" ? "#00d4aa" : "#ff4757"
+                                }">
+                                    ${
+                                      t.type === "credit" ? "+" : "-"
+                                    }₦${t.amount.toFixed(2)}
                                 </td>
-                                <td><span class="status-badge status-${t.status}">${t.status}</span></td>
+                                <td><span class="status-badge status-${
+                                  t.status
+                                }">${t.status}</span></td>
                             </tr>
-                        `).join('')}
+                        `
+                          )
+                          .join("")}
                     </tbody>
                 </table>
             `;
-        }
+      }
 
-        function initWalletUI() {
-            const addFundsBtn = document.getElementById('addFundsBtn');
-            const modal = document.getElementById('addFundsModal');
-            const cancelBtn = document.getElementById('cancelBtn');
-            const payNowBtn = document.getElementById('payNowBtn');
-            const applyPromoBtn = document.getElementById('applyPromoBtn');
+      function initWalletUI() {
+        const addFundsBtn = document.getElementById("addFundsBtn");
+        const modal = document.getElementById("addFundsModal");
+        const cancelBtn = document.getElementById("cancelBtn");
+        const payNowBtn = document.getElementById("payNowBtn");
+        const applyPromoBtn = document.getElementById("applyPromoBtn");
 
-            addFundsBtn.addEventListener('click', () => {
-                modal.style.display = 'flex';
-            });
+        addFundsBtn.addEventListener("click", () => {
+          modal.style.display = "flex";
+        });
 
-            cancelBtn.addEventListener('click', () => {
-                modal.style.display = 'none';
-            });
+        cancelBtn.addEventListener("click", () => {
+          modal.style.display = "none";
+        });
 
-            payNowBtn.addEventListener('click', async () => {
-                const amount = parseInt(document.getElementById('amountInput').value);
-                
-                if (!amount || amount < 100) {
-                    alert('Minimum amount is ₦100');
-                    return;
-                }
+        payNowBtn.addEventListener("click", async () => {
+          const amount = parseInt(document.getElementById("amountInput").value);
 
-                const { user } = await Auth.getCurrentUser();
-                const { data: profile } = await DB.getProfile(user.id);
+          if (!amount || amount < 100) {
+            alert("Minimum amount is ₦100");
+            return;
+          }
 
-                Paystack.initializePayment(amount, profile.email, async (response) => {
-                    modal.style.display = 'none';
-                    alert('Payment successful! Your balance will be updated shortly. Reference: ' + response.reference);
-                    await loadWalletData();
-                });
-            });
+          const { user } = await Auth.getCurrentUser();
+          const { data: profile } = await DB.getProfile(user.id);
 
-            applyPromoBtn.addEventListener('click', async () => {
-                const code = document.getElementById('promoCodeInput').value.trim();
-                if (!code) return;
+          Paystack.initializePayment(
+            amount,
+            profile.email,
+            async (response) => {
+              modal.style.display = "none";
+              alert(
+                "Payment successful! Your balance will be updated shortly. Reference: " +
+                  response.reference
+              );
+              await loadWalletData();
+            }
+          );
+        });
 
-                const result = await DB.applyPromoCode(currentUser.id, code);
-                const message = document.getElementById('promoMessage');
-                message.style.display = 'block';
-                
-                if (result.success) {
-                    message.style.color = '#00d4aa';
-                    message.textContent = `✅ Promo code applied! You'll get ${result.data.discount_value}${result.data.discount_type === 'percentage' ? '%' : '₦'} off your next purchase.`;
-                } else {
-                    message.style.color = '#ff4757';
-                    message.textContent = `❌ ${result.error}`;
-                }
-            });
-        }
+        applyPromoBtn.addEventListener("click", async () => {
+          const code = document.getElementById("promoCodeInput").value.trim();
+          if (!code) return;
+
+          const result = await DB.applyPromoCode(currentUser.id, code);
+          const message = document.getElementById("promoMessage");
+          message.style.display = "block";
+
+          if (result.success) {
+            message.style.color = "#00d4aa";
+            message.textContent = `✅ Promo code applied! You'll get ${
+              result.data.discount_value
+            }${
+              result.data.discount_type === "percentage" ? "%" : "₦"
+            } off your next purchase.`;
+          } else {
+            message.style.color = "#ff4757";
+            message.textContent = `❌ ${result.error}`;
+          }
+        });
+      }
     </script>
     <script src="../js/chatbot.js"></script>
-</body>
+  </body>
 </html>

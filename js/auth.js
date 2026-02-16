@@ -1,5 +1,31 @@
 // Auth Page JavaScript (Login & Signup Combined) with Supabase Integration
 
+// Check if required objects are loaded
+function checkAuthSystem() {
+  console.log("Checking auth system...");
+
+  // Check if Supabase is loaded
+  if (typeof supabase === "undefined") {
+    console.error("Supabase is not loaded!");
+    alert(
+      "Error: Supabase library failed to load. Please check your internet connection.",
+    );
+    return false;
+  }
+
+  // Check if Auth object is available (check global window object)
+  if (typeof window.Auth === "undefined") {
+    console.error("Auth object is not available!");
+    alert(
+      "Error: Authentication system failed to initialize. Please refresh the page.",
+    );
+    return false;
+  }
+
+  console.log("Auth system initialized successfully");
+  return true;
+}
+
 // Update time
 function updateTime() {
   const now = new Date();
@@ -97,7 +123,7 @@ if (loginForm) {
     signInBtn.classList.add("loading");
     signInBtn.textContent = "";
 
-    const result = await Auth.signIn(email, password);
+    const result = await window.Auth.signIn(email, password);
 
     signInBtn.classList.remove("loading");
     signInBtn.textContent = "Sign In";
@@ -195,7 +221,9 @@ if (confirmPassword) {
 
 // Signup form submission with Supabase
 if (signupForm) {
+  console.log("Signup form found, adding event listener");
   signupForm.addEventListener("submit", async (e) => {
+    console.log("Signup form submitted");
     e.preventDefault();
 
     let isValid = true;
@@ -210,11 +238,17 @@ if (signupForm) {
     const passwordVal = document.getElementById("signupPassword").value;
     const confirmPasswordVal = document.getElementById("confirmPassword").value;
 
+    console.log("Form values:", {
+      usernameVal,
+      emailVal,
+      passwordLength: passwordVal.length,
+    });
+
     if (usernameVal.length < 3) {
       showError(
         "username",
         "usernameError",
-        "Username must be at least 3 characters"
+        "Username must be at least 3 characters",
       );
       isValid = false;
     }
@@ -223,7 +257,7 @@ if (signupForm) {
       showError(
         "signupEmail",
         "emailError",
-        "Please enter a valid email address"
+        "Please enter a valid email address",
       );
       isValid = false;
     }
@@ -232,7 +266,7 @@ if (signupForm) {
       showError(
         "signupPassword",
         "passwordError",
-        "Password must be at least 6 characters"
+        "Password must be at least 6 characters",
       );
       isValid = false;
     }
@@ -242,26 +276,79 @@ if (signupForm) {
       isValid = false;
     }
 
+    console.log("Form validation result:", isValid);
+
     if (isValid) {
+      // Check if Auth system is available
+      if (!checkAuthSystem()) {
+        signupBtn.classList.remove("loading");
+        signupBtn.textContent = "Create Account";
+        return;
+      }
+
+      console.log("Form is valid, attempting to sign up...");
       signupBtn.classList.add("loading");
       signupBtn.textContent = "";
 
-      const result = await Auth.signUp(emailVal, passwordVal, usernameVal);
+      try {
+        console.log("Calling Auth.signUp with:", {
+          email: emailVal,
+          username: usernameVal,
+        });
+        const result = await window.Auth.signUp(
+          emailVal,
+          passwordVal,
+          usernameVal,
+        );
+        console.log("Auth.signUp result:", result);
 
-      signupBtn.classList.remove("loading");
-      signupBtn.textContent = "Create Account";
+        signupBtn.classList.remove("loading");
+        signupBtn.textContent = "Create Account";
 
-      if (result.success) {
-        successMessage.style.display = "block";
-        signupForm.reset();
-        strengthIndicator.style.display = "none";
+        if (result.success) {
+          console.log("Signup successful!");
 
-        setTimeout(() => {
-          successMessage.style.display = "none";
-          document.querySelector('[data-tab="login"]').click();
-        }, 2000);
-      } else {
-        alert("Error: " + result.error);
+          if (result.autoSignedIn) {
+            // Auto-signed in, redirect to dashboard
+            successMessage.textContent = result.message;
+            successMessage.style.display = "block";
+
+            setTimeout(() => {
+              window.location.href = "dashboard/index.html";
+            }, 1500);
+          } else if (result.needsConfirmation) {
+            // Show email confirmation message
+            successMessage.textContent = result.message;
+            successMessage.style.display = "block";
+            signupForm.reset();
+            strengthIndicator.style.display = "none";
+
+            // Switch to login tab after 3 seconds
+            setTimeout(() => {
+              successMessage.style.display = "none";
+              successMessage.textContent = "Account created successfully! 🎉";
+              document.querySelector('[data-tab="login"]').click();
+            }, 5000);
+          } else {
+            // Show regular success message
+            successMessage.style.display = "block";
+            signupForm.reset();
+            strengthIndicator.style.display = "none";
+
+            setTimeout(() => {
+              successMessage.style.display = "none";
+              document.querySelector('[data-tab="login"]').click();
+            }, 2000);
+          }
+        } else {
+          console.error("Signup failed:", result.error);
+          alert("Error: " + result.error);
+        }
+      } catch (error) {
+        console.error("Exception during signup:", error);
+        signupBtn.classList.remove("loading");
+        signupBtn.textContent = "Create Account";
+        alert("Unexpected error: " + error.message);
       }
     }
   });
