@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -281,7 +281,7 @@
           <span></span>
         </div>
         <div class="logo">
-          <div class="logo-icon">B</div>
+          <div class="logo-icon">F</div>
           Femzy
         </div>
       </div>
@@ -467,34 +467,28 @@
     <script src="../js/dashboard.js"></script>
     <script>
       let currentUser = null;
-      const services = [
-        "whatsapp",
-        "telegram",
-        "instagram",
-        "facebook",
-        "twitter",
-        "google",
-      ];
-      const prices = {
-        whatsapp: 200,
-        telegram: 150,
-        instagram: 180,
-        facebook: 170,
-        twitter: 160,
-        google: 190,
-      };
+      let activePrices = {};
 
       document.addEventListener("DOMContentLoaded", async () => {
-        if (!(await checkAuth())) {
+        // 1. Maintenance Check
+        await checkMaintenanceMode();
+
+        // 2. Auth Check
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
           window.location.href = "../auth.html";
           return;
         }
-        const { user } = await getCurrentUser();
         currentUser = user;
-        loadBalance();
-        loadActiveNumbers();
 
-        // Check if user is admin and show admin button
+        // 3. Load UI Data
+        await loadDynamicPrices();
+        await loadBalance();
+        await loadActiveNumbers();
+
+        // Check if user is admin
         const isAdmin = await isUserAdmin(user.id);
         if (isAdmin) {
           document.getElementById("adminSection").style.display = "block";
@@ -505,7 +499,6 @@
         const sidebar = document.querySelector(".sidebar");
 
         if (hamburger && sidebar) {
-          // Toggle sidebar on hamburger click
           function toggleSidebar(e) {
             if (e) {
               e.stopPropagation();
@@ -518,139 +511,157 @@
           hamburger.addEventListener("click", toggleSidebar);
           hamburger.addEventListener("touchstart", toggleSidebar);
 
-          // Close sidebar when clicking outside
           document.addEventListener(
             "click",
             (e) => {
-              const isClickOnHamburger = hamburger.contains(e.target);
-              const isClickOnSidebar = sidebar.contains(e.target);
-
               if (
-                !isClickOnHamburger &&
-                !isClickOnSidebar &&
+                !hamburger.contains(e.target) &&
+                !sidebar.contains(e.target) &&
                 sidebar.classList.contains("active")
               ) {
                 hamburger.classList.remove("active");
                 sidebar.classList.remove("active");
               }
             },
-            true
+            true,
           );
-
-          // Close sidebar when clicking a link on mobile
-          document.querySelectorAll(".sidebar-link").forEach((link) => {
-            link.addEventListener("click", () => {
-              if (window.innerWidth <= 768) {
-                hamburger.classList.remove("active");
-                sidebar.classList.remove("active");
-              }
-            });
-          });
         }
 
-        // Logout button handler
-        const logoutBtn = document.getElementById("logoutBtn");
-        if (logoutBtn) {
-          logoutBtn.addEventListener("click", async (e) => {
-            e.preventDefault();
-            const success = await signOut();
-            if (success) {
+        // Logout
+        document
+          .getElementById("logoutBtn")
+          .addEventListener("click", async () => {
+            if (confirm("Are you sure?")) {
+              await supabase.auth.signOut();
               window.location.href = "../auth.html";
-            } else {
-              alert("Logout failed. Please try again.");
             }
           });
-        }
       });
+
+      async function loadDynamicPrices() {
+        try {
+          const pricing = await getAllActivePricing("sms");
+          pricing.forEach((p) => {
+            if (p.country === "US") {
+              activePrices[p.service_name] = p.selling_price;
+
+              // Update UI price badges
+              const priceBadge = document.querySelector(
+                `.service-card div[data-price]`,
+              ); // Simplified for demo, better to have IDs
+              // Actually let's find by service name in the UI
+              const cards = document.querySelectorAll(".service-card");
+              cards.forEach((card) => {
+                const name = card
+                  .querySelector(".service-name")
+                  .textContent.toLowerCase()
+                  .replace(/[^\w]/g, "");
+                if (
+                  p.service_name.includes(name) ||
+                  name.includes(p.service_name)
+                ) {
+                  card.querySelector(".service-price").textContent =
+                    `₦${p.selling_price}`;
+                }
+              });
+            }
+          });
+        } catch (error) {
+          console.error("Error loading prices:", error);
+        }
+      }
 
       async function searchNumbers(service) {
         const loader = document.getElementById(`loader-${service}`);
         const container = document.getElementById(`numbers-${service}`);
-
         loader.classList.add("active");
         container.innerHTML = "";
 
-        // Simulate API call delay
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        try {
+          // In real 5sim, we don't "browse" numbers, we just buy them.
+          // I will show a "Get Number" button instead of multiple mock numbers.
+          const price = activePrices[service] || 250;
 
-        const mockNumbers = generateMockNumbers(5);
-        const price = prices[service];
-
-        mockNumbers.forEach((number) => {
-          const card = document.createElement("div");
-          card.className = "number-card";
-          card.innerHTML = `
-                    <div class="number-text">${number}</div>
-                    <div class="number-status">USA</div>
-                    <button class="btn-buy" onclick="buyNumber('${number}', '${service}', ${price})">
-                        Buy ₦${price}
-                    </button>
-                `;
-          container.appendChild(card);
-        });
-
-        loader.classList.remove("active");
-      }
-
-      function generateMockNumbers(count) {
-        const numbers = [];
-        for (let i = 0; i < count; i++) {
-          const num =
-            "+1" + Math.floor(Math.random() * 9000000000 + 1000000000);
-          numbers.push(num);
+          container.innerHTML = `
+            <div class="number-card" style="grid-column: 1 / -1;">
+              <div class="number-text">USA - ${service.toUpperCase()}</div>
+              <div class="number-status">Price: ₦${price}</div>
+              <button class="btn-buy" onclick="buyRealNumber('${service}', ${price})">
+                🚀 Purchase Number (₦${price})
+              </button>
+            </div>
+          `;
+        } catch (error) {
+          container.innerHTML = `<p style="color:red">Error: ${error.message}</p>`;
+        } finally {
+          loader.classList.remove("active");
         }
-        return numbers;
       }
 
-      async function buyNumber(phoneNumber, service, price) {
+      async function buyRealNumber(service, price) {
         const wallet = await getWallet(currentUser.id);
-
         if (wallet.balance < price) {
           showWarning(
-            `Insufficient balance. You need ₦${price} but have ₦${wallet.balance}`
+            `Insufficient balance. (Needed: ₦${price}, Have: ₦${wallet.balance})`,
           );
           return;
         }
 
+        if (!confirm(`Confirm purchase of ${service} number for ₦${price}?`))
+          return;
+
+        showSuccess("Processing request... please wait.");
+
         try {
-          // Deduct from wallet
-          await updateWallet(currentUser.id, wallet.balance - price);
-
-          // Create transaction
-          await createTransaction(
+          // Call the real purchase function from js/api-5sim.js
+          const result = await purchaseSMSNumber(
             currentUser.id,
-            "debit",
-            price,
-            `Purchased ${service} number: ${phoneNumber}`,
-            "sms_number_purchase"
-          );
-
-          // Add SMS number
-          await addSMSNumber(
-            currentUser.id,
-            phoneNumber,
-            "United States",
-            "US",
+            "usa",
             service,
-            price
+            price,
           );
 
-          showSuccess(`Number purchased successfully! ${phoneNumber}`);
-          loadBalance();
-          loadActiveNumbers();
+          if (result.success) {
+            showSuccess(`✅ Success! Number: ${result.data.phone_number}`);
+            await loadBalance();
+            await loadActiveNumbers();
+          } else {
+            throw new Error(result.error);
+          }
         } catch (error) {
           console.error("Purchase error:", error);
-          showError("Purchase failed. Please try again.");
+          showError("Purchase failed: " + error.message);
+        }
+      }
+
+      async function deleteNumber(numberId) {
+        if (!confirm("Remove this number from your list?")) return;
+        try {
+          await deleteSMSNumber(numberId);
+          showSuccess("Removed.");
+          loadActiveNumbers();
+        } catch (error) {
+          showError("Error: " + error.message);
         }
       }
 
       async function loadActiveNumbers() {
         try {
           const numbers = await getSMSNumbers(currentUser.id);
+          const servicesList = [
+            "whatsapp",
+            "telegram",
+            "instagram",
+            "facebook",
+            "twitter",
+            "google",
+          ];
 
-          services.forEach((service) => {
+          servicesList.forEach((service) => {
             const container = document.getElementById(`active-${service}`);
-            const serviceNumbers = numbers.filter((n) => n.service === service);
+            const serviceNumbers = numbers.filter(
+              (n) => n.service === service && n.status !== "cancelled",
+            );
 
             if (serviceNumbers.length === 0) {
               container.innerHTML =
@@ -660,29 +671,21 @@
 
             let html =
               '<div class="table-container"><table class="number-table"><thead><tr><th>Number</th><th>Status</th><th>Expires</th><th>Actions</th></tr></thead><tbody>';
-
             serviceNumbers.forEach((num) => {
               const status =
                 new Date(num.expires_at) > new Date() ? "active" : "expired";
               html += `
-                            <tr>
-                                <td>${num.phone_number}</td>
-                                <td><span class="status-badge status-${status}">${status}</span></td>
-                                <td>${new Date(
-                                  num.expires_at
-                                ).toLocaleDateString()}</td>
-                                <td>
-                                    <button class="btn-copy" onclick="copyToClipboard('${
-                                      num.phone_number
-                                    }')">Copy</button>
-                                    <button class="btn-delete" onclick="deleteNumber('${
-                                      num.id
-                                    }')">Delete</button>
-                                </td>
-                            </tr>
-                        `;
+                <tr>
+                  <td>${num.phone_number}</td>
+                  <td><span class="status-badge status-${status}">${num.status}</span></td>
+                  <td>${new Date(num.expires_at).toLocaleDateString()}</td>
+                  <td>
+                    <button class="btn-copy" onclick="copyToClipboard('${num.phone_number}')">Copy</button>
+                    <button class="btn-delete" onclick="deleteNumber('${num.id}')">Delete</button>
+                  </td>
+                </tr>
+              `;
             });
-
             html += "</tbody></table></div>";
             container.innerHTML = html;
           });
@@ -691,50 +694,33 @@
         }
       }
 
-      async function deleteNumber(numberId) {
-        if (!confirm("Are you sure you want to delete this number?")) return;
-
-        try {
-          await deleteSMSNumber(numberId);
-          showSuccess("Number deleted successfully");
-          loadActiveNumbers();
-        } catch (error) {
-          console.error("Delete error:", error);
-          showError("Failed to delete number");
-        }
-      }
-
-      function copyToClipboard(text) {
-        navigator.clipboard.writeText(text).then(() => {
-          showSuccess("Number copied to clipboard");
-        });
-      }
-
       async function loadBalance() {
         try {
           const wallet = await getWallet(currentUser.id);
-          document.getElementById(
-            "balanceDisplay"
-          ).textContent = `₦${wallet.balance.toFixed(2)}`;
-
+          const balance = parseFloat(wallet.balance || 0).toFixed(2);
+          document.getElementById("balanceDisplay").textContent = `₦${balance}`;
           if (wallet.balance < 100) {
             document.getElementById("balanceWarning").style.display = "block";
             document.getElementById("balanceWarning").textContent =
-              "⚠️ Low balance. Top up your wallet to continue purchasing.";
+              "⚠️ Low balance. Top up to continue.";
+          } else {
+            document.getElementById("balanceWarning").style.display = "none";
           }
         } catch (error) {
           console.error("Error loading balance:", error);
         }
       }
 
+      function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => showSuccess("Copied!"));
+      }
+
       function showSuccess(msg) {
         alert("✓ " + msg);
       }
-
       function showError(msg) {
         alert("✗ " + msg);
       }
-
       function showWarning(msg) {
         alert("⚠️ " + msg);
       }

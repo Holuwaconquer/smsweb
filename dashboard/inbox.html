@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -200,7 +200,7 @@
           <span></span>
         </div>
         <div class="logo">
-          <div class="logo-icon">B</div>
+          <div class="logo-icon">F</div>
           Femzy
         </div>
       </div>
@@ -290,20 +290,28 @@
     <script src="../js/dashboard.js"></script>
     <script>
       let currentUser = null;
-      let selectedNumber = null;
-      let autoRefreshInterval = null;
+      let selectedNumberId = null;
+      let pollingStopped = false;
 
       document.addEventListener("DOMContentLoaded", async () => {
-        if (!(await checkAuth())) {
+        // 1. Maintenance Check
+        await checkMaintenanceMode();
+
+        // 2. Auth Check
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
           window.location.href = "../auth.html";
           return;
         }
-        const { user } = await getCurrentUser();
         currentUser = user;
+
+        // 3. Load UI Data
         loadBalance();
         loadNumbers();
 
-        // Check if user is admin and show admin button
+        // Check if user is admin
         const isAdmin = await isUserAdmin(user.id);
         if (isAdmin) {
           document.getElementById("adminSection").style.display = "block";
@@ -312,9 +320,7 @@
         // Hamburger menu toggle
         const hamburger = document.getElementById("hamburger");
         const sidebar = document.querySelector(".sidebar");
-
         if (hamburger && sidebar) {
-          // Toggle sidebar on hamburger click
           function toggleSidebar(e) {
             if (e) {
               e.stopPropagation();
@@ -323,67 +329,46 @@
             hamburger.classList.toggle("active");
             sidebar.classList.toggle("active");
           }
-
           hamburger.addEventListener("click", toggleSidebar);
           hamburger.addEventListener("touchstart", toggleSidebar);
-
-          // Close sidebar when clicking outside
           document.addEventListener(
             "click",
             (e) => {
-              const isClickOnHamburger = hamburger.contains(e.target);
-              const isClickOnSidebar = sidebar.contains(e.target);
-
               if (
-                !isClickOnHamburger &&
-                !isClickOnSidebar &&
+                !hamburger.contains(e.target) &&
+                !sidebar.contains(e.target) &&
                 sidebar.classList.contains("active")
               ) {
                 hamburger.classList.remove("active");
                 sidebar.classList.remove("active");
               }
             },
-            true
+            true,
           );
-
-          // Close sidebar when clicking a link on mobile
-          document.querySelectorAll(".sidebar-link").forEach((link) => {
-            link.addEventListener("click", () => {
-              if (window.innerWidth <= 768) {
-                hamburger.classList.remove("active");
-                sidebar.classList.remove("active");
-              }
-            });
-          });
         }
 
         // Auto refresh toggle
-        document
-          .getElementById("autoRefreshToggle")
-          .addEventListener("click", (e) => {
-            e.currentTarget.classList.toggle("active");
-            if (e.currentTarget.classList.contains("active")) {
-              autoRefreshInterval = setInterval(() => {
-                if (selectedNumber) loadMessages(selectedNumber);
-              }, 5000);
-            } else {
-              clearInterval(autoRefreshInterval);
-            }
-          });
+        const refreshToggle = document.getElementById("autoRefreshToggle");
+        refreshToggle.addEventListener("click", () => {
+          refreshToggle.classList.toggle("active");
+          pollingStopped = !refreshToggle.classList.contains("active");
+          if (!pollingStopped && selectedNumberId) {
+            startPolling(selectedNumberId);
+          }
+        });
 
-        // Logout button handler
-        const logoutBtn = document.getElementById("logoutBtn");
-        if (logoutBtn) {
-          logoutBtn.addEventListener("click", async (e) => {
-            e.preventDefault();
-            const success = await signOut();
-            if (success) {
+        // Initialize as active
+        refreshToggle.classList.add("active");
+
+        // Logout
+        document
+          .getElementById("logoutBtn")
+          .addEventListener("click", async () => {
+            if (confirm("Are you sure?")) {
+              await supabase.auth.signOut();
               window.location.href = "../auth.html";
-            } else {
-              alert("Logout failed. Please try again.");
             }
           });
-        }
       });
 
       async function loadNumbers() {
@@ -401,8 +386,8 @@
           numbers.forEach((num) => {
             const item = document.createElement("div");
             item.className = "number-item";
-            item.textContent = num.phone_number;
-            item.onclick = () => selectNumber(num.phone_number, item);
+            item.textContent = `${num.phone_number} (${num.service})`;
+            item.onclick = () => selectNumber(num.id, num.phone_number, item);
             list.appendChild(item);
           });
         } catch (error) {
@@ -410,28 +395,37 @@
         }
       }
 
-      function selectNumber(phoneNumber, element) {
-        // Remove active class from all items
-        document.querySelectorAll(".number-item").forEach((item) => {
-          item.classList.remove("active");
-        });
-        // Add active class to clicked item
+      function selectNumber(id, phoneNumber, element) {
+        document
+          .querySelectorAll(".number-item")
+          .forEach((i) => i.classList.remove("active"));
         element.classList.add("active");
-        selectedNumber = phoneNumber;
-        document.getElementById(
-          "selectedNumberDisplay"
-        ).textContent = `Messages from ${phoneNumber}`;
-        loadMessages(phoneNumber);
+
+        selectedNumberId = id;
+        document.getElementById("selectedNumberDisplay").textContent =
+          `Messages for ${phoneNumber}`;
+
+        loadMessages(id);
+        if (!pollingStopped) {
+          startPolling(id);
+        }
       }
 
-      async function loadMessages(phoneNumber) {
+      async function loadMessages(smsNumberId) {
         try {
-          const messages = await getSMSMessages(currentUser.id, phoneNumber);
+          const { data: messages, error } = await supabase
+            .from("sms_messages")
+            .select("*")
+            .eq("sms_number_id", smsNumberId)
+            .order("received_at", { ascending: false });
+
+          if (error) throw error;
           const list = document.getElementById("messagesList");
           list.innerHTML = "";
 
           if (messages.length === 0) {
-            list.innerHTML = '<div class="empty-state">No messages yet</div>';
+            list.innerHTML =
+              '<div class="empty-state">Waiting for SMS... (Will show up here automatically)</div>';
             return;
           }
 
@@ -440,22 +434,15 @@
             item.className = "message-item";
             const time = new Date(msg.received_at).toLocaleString();
             item.innerHTML = `
-                        <div class="message-header">
-                            <div class="message-from">📨 ${
-                              msg.from || "Unknown Sender"
-                            }</div>
-                            <div class="message-time">${time}</div>
-                        </div>
-                        <div class="message-body">${
-                          msg.body || "(No content)"
-                        }</div>
-                        <div class="message-actions">
-                            <button class="btn-copy" onclick="copyMessage('${msg.body.replace(
-                              /'/g,
-                              "\\'"
-                            )}')">Copy</button>
-                        </div>
-                    `;
+                <div class="message-header">
+                    <div class="message-from">📨 ${msg.sender || "Unknown"}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+                <div class="message-body">${msg.message}</div>
+                <div class="message-actions">
+                    <button class="btn-copy" onclick="copyMessage('${msg.message.replace(/'/g, "\\'")}')">Copy</button>
+                </div>
+            `;
             list.appendChild(item);
           });
         } catch (error) {
@@ -463,18 +450,28 @@
         }
       }
 
+      async function startPolling(id) {
+        // Use the global startSMSPolling helper from js/api-5sim.js
+        if (window.activePoll) clearInterval(window.activePoll);
+
+        window.activePoll = await startSMSPolling(id, (newMessages) => {
+          if (!pollingStopped) {
+            loadMessages(id);
+          }
+        });
+      }
+
       function copyMessage(text) {
         navigator.clipboard.writeText(text).then(() => {
-          showSuccess("Message copied to clipboard");
+          showSuccess("Message copied!");
         });
       }
 
       async function loadBalance() {
         try {
           const wallet = await getWallet(currentUser.id);
-          document.getElementById(
-            "balanceDisplay"
-          ).textContent = `₦${wallet.balance.toFixed(2)}`;
+          document.getElementById("balanceDisplay").textContent =
+            `₦${parseFloat(wallet.balance || 0).toFixed(2)}`;
         } catch (error) {
           console.error("Error loading balance:", error);
         }

@@ -42,10 +42,56 @@ async function signOut() {
 
 async function isUserAdmin(userId) {
   try {
-    const profile = await getProfile(userId);
-    return profile && profile.is_admin === true;
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", userId)
+      .single();
+
+    if (error) throw error;
+    return data && data.is_admin === true;
   } catch (error) {
     console.error("Admin check error:", error);
+    return false;
+  }
+}
+
+async function checkMaintenanceMode() {
+  try {
+    const { data, error } = await supabase
+      .from("system_settings")
+      .select("*")
+      .single();
+
+    if (error) return false;
+
+    if (data && data.maintenance_mode) {
+      // Check if current user is admin (admins bypass maintenance)
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        const isAdmin = await isUserAdmin(user.id);
+        if (isAdmin) return false;
+      }
+
+      // Redirect to maintenance page or show alert
+      document.body.innerHTML = `
+        <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; font-family: sans-serif; text-align: center; padding: 20px;">
+          <div style="font-size: 64px; margin-bottom: 20px;">🛠️</div>
+          <h1 style="color: #1e293b; margin-bottom: 10px;">Maintenance Mode</h1>
+          <p style="color: #64748b; font-size: 18px; max-width: 500px; line-height: 1.6;">${
+            data.maintenance_message ||
+            "We are currently updating our system to serve you better. Please check back in a few minutes."
+          }</p>
+          <div style="margin-top: 30px; font-size: 14px; color: #94a3b8;">&copy; ${new Date().getFullYear()} Femzy </div>
+        </div>
+      `;
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error("Maintenance check error:", error);
     return false;
   }
 }
@@ -477,7 +523,49 @@ async function getAdminStats() {
     };
   }
 }
+// ============================================
+// DYNAMIC PRICING FUNCTIONS
+// ============================================
 
+async function getServicePrice(category, serviceName, country = null) {
+  try {
+    let query = supabase
+      .from("pricing")
+      .select("selling_price")
+      .eq("category", category)
+      .eq("service_name", serviceName)
+      .eq("is_active", true);
+
+    if (country) {
+      query = query.eq("country", country);
+    }
+
+    const { data, error } = await query.single();
+
+    if (error) throw error;
+    return data ? data.selling_price : null;
+  } catch (error) {
+    console.error(`Error fetching price for ${serviceName}:`, error);
+    return null;
+  }
+}
+
+async function getAllActivePricing(category = null) {
+  try {
+    let query = supabase.from("pricing").select("*").eq("is_active", true);
+
+    if (category) {
+      query = query.eq("category", category);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("Error fetching pricing:", error);
+    return [];
+  }
+}
 // ============================================
 // UTILITY FUNCTIONS
 // ============================================

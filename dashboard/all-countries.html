@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -282,35 +282,28 @@
     <script src="../js/dashboard.js"></script>
     <script>
       let currentUser = null;
-      const countriesData = [
-        {
-          name: "United Kingdom",
-          flag: "🇬🇧",
-          code: "GB",
-          prices: [220, 250, 280],
-        },
-        { name: "Canada", flag: "🇨🇦", code: "CA", prices: [210, 240, 270] },
-        { name: "Australia", flag: "🇦🇺", code: "AU", prices: [230, 260, 290] },
-        { name: "Germany", flag: "🇩🇪", code: "DE", prices: [200, 230, 260] },
-        { name: "France", flag: "🇫🇷", code: "FR", prices: [205, 235, 265] },
-        { name: "India", flag: "🇮🇳", code: "IN", prices: [100, 120, 140] },
-        { name: "Brazil", flag: "🇧🇷", code: "BR", prices: [150, 170, 190] },
-        { name: "Mexico", flag: "🇲🇽", code: "MX", prices: [130, 150, 170] },
-        { name: "Japan", flag: "🇯🇵", code: "JP", prices: [240, 270, 300] },
-        { name: "Nigeria", flag: "🇳🇬", code: "NG", prices: [80, 100, 120] },
-      ];
+      let activePrices = {};
 
       document.addEventListener("DOMContentLoaded", async () => {
-        if (!(await checkAuth())) {
+        // 1. Maintenance Check
+        await checkMaintenanceMode();
+
+        // 2. Auth Check
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
           window.location.href = "../auth.html";
           return;
         }
-        const { user } = await getCurrentUser();
         currentUser = user;
-        loadBalance();
+
+        // 3. Load UI Data
+        await loadDynamicPrices();
+        await loadBalance();
         renderCountries();
 
-        // Check if user is admin and show admin button
+        // Check if user is admin
         const isAdmin = await isUserAdmin(user.id);
         if (isAdmin) {
           document.getElementById("adminSection").style.display = "block";
@@ -319,9 +312,7 @@
         // Hamburger menu toggle
         const hamburger = document.getElementById("hamburger");
         const sidebar = document.querySelector(".sidebar");
-
         if (hamburger && sidebar) {
-          // Toggle sidebar on hamburger click
           function toggleSidebar(e) {
             if (e) {
               e.stopPropagation();
@@ -330,97 +321,88 @@
             hamburger.classList.toggle("active");
             sidebar.classList.toggle("active");
           }
-
           hamburger.addEventListener("click", toggleSidebar);
           hamburger.addEventListener("touchstart", toggleSidebar);
-
-          // Close sidebar when clicking outside
           document.addEventListener(
             "click",
             (e) => {
-              const isClickOnHamburger = hamburger.contains(e.target);
-              const isClickOnSidebar = sidebar.contains(e.target);
-
               if (
-                !isClickOnHamburger &&
-                !isClickOnSidebar &&
+                !hamburger.contains(e.target) &&
+                !sidebar.contains(e.target) &&
                 sidebar.classList.contains("active")
               ) {
                 hamburger.classList.remove("active");
                 sidebar.classList.remove("active");
               }
             },
-            true
+            true,
           );
-
-          // Close sidebar when clicking a link on mobile
-          document.querySelectorAll(".sidebar-link").forEach((link) => {
-            link.addEventListener("click", () => {
-              if (window.innerWidth <= 768) {
-                hamburger.classList.remove("active");
-                sidebar.classList.remove("active");
-              }
-            });
-          });
         }
 
-        // Logout button handler
-        const logoutBtn = document.getElementById("logoutBtn");
-        if (logoutBtn) {
-          logoutBtn.addEventListener("click", async (e) => {
-            e.preventDefault();
-            const success = await signOut();
-            if (success) {
+        // Logout
+        document
+          .getElementById("logoutBtn")
+          .addEventListener("click", async () => {
+            if (confirm("Are you sure?")) {
+              await supabase.auth.signOut();
               window.location.href = "../auth.html";
-            } else {
-              alert("Logout failed. Please try again.");
             }
           });
-        }
       });
 
-      function renderCountries(filtered = null) {
+      async function loadDynamicPrices() {
+        try {
+          const pricing = await getAllActivePricing("sms");
+          pricing.forEach((p) => {
+            if (p.country !== "US") {
+              if (!activePrices[p.country]) activePrices[p.country] = {};
+              activePrices[p.country][p.service_name] = p.selling_price;
+            }
+          });
+        } catch (error) {
+          console.error("Error loading prices:", error);
+        }
+      }
+
+      function renderCountries(filteredData = null) {
         const grid = document.getElementById("countriesGrid");
         grid.innerHTML = "";
 
-        const data = filtered || countriesData;
+        // We use the countries that have pricing configured
+        const countries = filteredData || Object.keys(activePrices);
 
-        data.forEach((country) => {
+        if (countries.length === 0) {
+          grid.innerHTML =
+            '<div class="empty-state">No international pricing configured yet.</div>';
+          return;
+        }
+
+        countries.forEach((countryId) => {
+          const services = activePrices[countryId];
+          if (!services) return;
+
           const card = document.createElement("div");
           card.className = "country-card";
-          const avgPrice = Math.round(
-            country.prices.reduce((a, b) => a + b, 0) / country.prices.length
-          );
+
+          let serviceHtml = "";
+          Object.entries(services).forEach(([name, price]) => {
+            serviceHtml += `
+               <div class="number-item">
+                 <div class="number-info">
+                   <span class="number-phone">${name.toUpperCase()}</span>
+                   <span class="number-price">₦${parseFloat(price).toLocaleString()}</span>
+                 </div>
+                 <button class="btn-buy" onclick="buyInternationalNumber('${countryId}', '${name}', ${price})">Buy</button>
+               </div>
+             `;
+          });
 
           card.innerHTML = `
-                    <div class="country-header">
-                        <div>
-                            <div class="country-flag">${country.flag}</div>
-                            <div class="country-name">${country.name}</div>
-                        </div>
-                    </div>
-                    <div class="numbers-list">
-                        ${country.prices
-                          .map(
-                            (price, i) => `
-                            <div class="number-item">
-                                <div class="number-info">
-                                    <span class="number-phone">+${
-                                      country.code
-                                    }${String(i + 1).padStart(10, "0")}</span>
-                                    <span class="number-price">₦${price}</span>
-                                </div>
-                                <button class="btn-buy" onclick="buyNumber('+${
-                                  country.code
-                                }${String(i + 1).padStart(10, "0")}', '${
-                              country.name
-                            }', ${price}, '${country.code}')">Buy</button>
-                            </div>
-                        `
-                          )
-                          .join("")}
-                    </div>
-                `;
+            <div class="country-header">
+              <div class="country-name">📍 ${countryId.toUpperCase()}</div>
+            </div>
+            <div class="numbers-list">${serviceHtml}</div>
+          `;
           grid.appendChild(card);
         });
       }
@@ -428,79 +410,65 @@
       function filterCountries() {
         const selected = document.getElementById("countryFilter").value;
         if (selected) {
-          const filtered = countriesData.filter((c) => c.name === selected);
+          const filtered = Object.keys(activePrices).filter(
+            (c) => c.toLowerCase() === selected.toLowerCase(),
+          );
           renderCountries(filtered);
         } else {
           renderCountries();
         }
       }
 
-      function filterByPrice() {
-        const range = document.getElementById("priceFilter").value;
-        let filtered = countriesData;
-
-        if (range === "low") {
-          filtered = countriesData.filter((c) => Math.min(...c.prices) < 200);
-        } else if (range === "medium") {
-          filtered = countriesData.filter((c) => {
-            const min = Math.min(...c.prices);
-            const max = Math.max(...c.prices);
-            return (min >= 200 && min <= 500) || (max >= 200 && max <= 500);
-          });
-        } else if (range === "high") {
-          filtered = countriesData.filter((c) => Math.max(...c.prices) > 500);
-        }
-
-        renderCountries(filtered);
-      }
-
-      async function buyNumber(phoneNumber, country, price, countryCode) {
+      async function buyInternationalNumber(country, service, price) {
         const wallet = await getWallet(currentUser.id);
-
         if (wallet.balance < price) {
           showWarning(
-            `Insufficient balance. You need ₦${price} but have ₦${wallet.balance}`
+            `Insufficient balance. (Needed: ₦${price}, Have: ₦${wallet.balance})`,
           );
           return;
         }
 
+        if (
+          !confirm(
+            `Confirm purchase of ${country.toUpperCase()} ${service} number for ₦${price}?`,
+          )
+        )
+          return;
+
+        showSuccess("Processing through 5sim... please wait.");
+
         try {
-          await updateWallet(currentUser.id, wallet.balance - price);
-          await createTransaction(
+          // Call the real purchase function from js/api-5sim.js
+          const result = await purchaseSMSNumber(
             currentUser.id,
-            "debit",
+            country.toLowerCase(),
+            service,
             price,
-            `Purchased ${country} number: ${phoneNumber}`,
-            "sms_number_purchase"
-          );
-          await addSMSNumber(
-            currentUser.id,
-            phoneNumber,
-            country,
-            countryCode,
-            "international",
-            price
           );
 
-          showSuccess(`Number purchased successfully! ${phoneNumber}`);
-          loadBalance();
+          if (result.success) {
+            showSuccess(`✅ Success! Number: ${result.data.phone_number}`);
+            await loadBalance();
+          } else {
+            throw new Error(result.error);
+          }
         } catch (error) {
           console.error("Purchase error:", error);
-          showError("Purchase failed. Please try again.");
+          showError("Purchase failed: " + error.message);
         }
       }
 
       async function loadBalance() {
         try {
           const wallet = await getWallet(currentUser.id);
-          document.getElementById(
-            "balanceDisplay"
-          ).textContent = `₦${wallet.balance.toFixed(2)}`;
-
+          const balance = parseFloat(wallet.balance || 0).toFixed(2);
+          document.getElementById("balanceDisplay").textContent = `₦${balance}`;
           if (wallet.balance < 100) {
             document.getElementById("balanceWarning").style.display = "block";
             document.getElementById("balanceWarning").textContent =
-              "⚠️ Low balance. Top up your wallet to continue purchasing.";
+              "⚠️ Low balance. Top up to continue.";
+          } else {
+            document.getElementById("balanceWarning").style.display = "none";
           }
         } catch (error) {
           console.error("Error loading balance:", error);
@@ -510,11 +478,9 @@
       function showSuccess(msg) {
         alert("✓ " + msg);
       }
-
       function showError(msg) {
         alert("✗ " + msg);
       }
-
       function showWarning(msg) {
         alert("⚠️ " + msg);
       }

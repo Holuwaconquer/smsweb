@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -395,23 +395,27 @@
     <script src="../js/dashboard.js"></script>
     <script>
       let currentUser = null;
-      const basePrices = {
-        instagram: { followers: 500, likes: 300, views: 200, comments: 400 },
-        tiktok: { followers: 400, likes: 250, views: 150, shares: 300 },
-        youtube: { subscribers: 600, views: 200, likes: 350, comments: 450 },
-        twitter: { followers: 450, retweets: 300, likes: 250, replies: 350 },
-      };
+      let dynamicBoostPrices = {};
 
       document.addEventListener("DOMContentLoaded", async () => {
-        if (!(await checkAuth())) {
+        // 1. Maintenance Check
+        await checkMaintenanceMode();
+
+        // 2. Auth Check
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
           window.location.href = "../auth.html";
           return;
         }
-        const { user } = await getCurrentUser();
         currentUser = user;
-        loadBalance();
 
-        // Check if user is admin and show admin button
+        // 3. Load UI Data
+        await loadDynamicBoostPrices();
+        await loadBalance();
+
+        // Check if user is admin
         const isAdmin = await isUserAdmin(user.id);
         if (isAdmin) {
           document.getElementById("adminSection").style.display = "block";
@@ -420,9 +424,7 @@
         // Hamburger menu toggle
         const hamburger = document.getElementById("hamburger");
         const sidebar = document.querySelector(".sidebar");
-
         if (hamburger && sidebar) {
-          // Toggle sidebar on hamburger click
           function toggleSidebar(e) {
             if (e) {
               e.stopPropagation();
@@ -431,81 +433,115 @@
             hamburger.classList.toggle("active");
             sidebar.classList.toggle("active");
           }
-
           hamburger.addEventListener("click", toggleSidebar);
           hamburger.addEventListener("touchstart", toggleSidebar);
-
-          // Close sidebar when clicking outside
           document.addEventListener(
             "click",
             (e) => {
-              const isClickOnHamburger = hamburger.contains(e.target);
-              const isClickOnSidebar = sidebar.contains(e.target);
-
               if (
-                !isClickOnHamburger &&
-                !isClickOnSidebar &&
+                !hamburger.contains(e.target) &&
+                !sidebar.contains(e.target) &&
                 sidebar.classList.contains("active")
               ) {
                 hamburger.classList.remove("active");
                 sidebar.classList.remove("active");
               }
             },
-            true
+            true,
           );
-
-          // Close sidebar when clicking a link on mobile
-          document.querySelectorAll(".sidebar-link").forEach((link) => {
-            link.addEventListener("click", () => {
-              if (window.innerWidth <= 768) {
-                hamburger.classList.remove("active");
-                sidebar.classList.remove("active");
-              }
-            });
-          });
         }
 
-        // Logout button handler
-        const logoutBtn = document.getElementById("logoutBtn");
-        if (logoutBtn) {
-          logoutBtn.addEventListener("click", async (e) => {
-            e.preventDefault();
-            const success = await signOut();
-            if (success) {
+        // Logout
+        document
+          .getElementById("logoutBtn")
+          .addEventListener("click", async () => {
+            if (confirm("Are you sure?")) {
+              await supabase.auth.signOut();
               window.location.href = "../auth.html";
-            } else {
-              alert("Logout failed. Please try again.");
             }
           });
-        }
       });
 
+      async function loadDynamicBoostPrices() {
+        try {
+          const pricing = await getAllActivePricing("social_boost");
+          pricing.forEach((p) => {
+            // Map service name to platform/type (e.g. "instagram_followers" -> {platform: 'instagram', type: 'followers'})
+            const parts = p.service_name.split("_");
+            const platform = parts[0];
+            const type = parts[1] || "default";
+
+            if (!dynamicBoostPrices[platform])
+              dynamicBoostPrices[platform] = {};
+            dynamicBoostPrices[platform][type] = p.selling_price;
+          });
+
+          // Initial price update for all cards
+          ["instagram", "tiktok", "youtube", "twitter"].forEach((p) =>
+            updatePrice(p),
+          );
+        } catch (error) {
+          console.error("Error loading boost prices:", error);
+          // Fallback to static if needed
+        }
+      }
+
       function updatePrice(platform) {
-        const service = document.getElementById(`${platform}-service`).value;
-        const quantity =
-          parseInt(document.getElementById(`${platform}-quantity`).value) || 1;
-        const basePrice = basePrices[platform][service];
+        const platformKey = platform === "instagram" ? "instagram" : platform; // normalization
+        const serviceNode = document.getElementById(
+          `${platform === "youtube" ? "yt" : platform}-service`,
+        );
+        const quantityNode = document.getElementById(
+          `${platform === "youtube" ? "yt" : platform}-quantity`,
+        );
+
+        if (!serviceNode || !quantityNode) return;
+
+        const service = serviceNode.value;
+        const quantity = parseInt(quantityNode.value) || 1;
+
+        // Get from dynamic prices or fallback
+        const basePrice =
+          (dynamicBoostPrices[platform] &&
+            dynamicBoostPrices[platform][service]) ||
+          500;
         const totalPrice = basePrice * quantity;
+
         document.getElementById(
-          `${platform}-price`
-        ).textContent = `₦${totalPrice}`;
+          `${platform === "youtube" ? "youtube" : platform}-price`,
+        ).textContent = `₦${totalPrice.toLocaleString()}`;
       }
 
       async function boost(platform) {
-        const service = document.getElementById(`${platform}-service`).value;
-        const quantity =
-          parseInt(document.getElementById(`${platform}-quantity`).value) || 1;
-        const basePrice = basePrices[platform][service];
+        const serviceNode = document.getElementById(
+          `${platform === "youtube" ? "yt" : platform}-service`,
+        );
+        const quantityNode = document.getElementById(
+          `${platform === "youtube" ? "yt" : platform}-quantity`,
+        );
+        const service = serviceNode.value;
+        const quantity = parseInt(quantityNode.value) || 1;
+
+        const basePrice =
+          (dynamicBoostPrices[platform] &&
+            dynamicBoostPrices[platform][service]) ||
+          500;
         const totalPrice = basePrice * quantity;
 
         const wallet = await getWallet(currentUser.id);
-
         if (wallet.balance < totalPrice) {
           showWarning(
-            `Insufficient balance. You need ₦${totalPrice} but have ₦${wallet.balance}`
+            `Insufficient balance. (Needed: ₦${totalPrice}, Have: ₦${wallet.balance})`,
           );
           return;
         }
+
+        if (
+          !confirm(
+            `Confirm boost for ${platform} ${service} (Qty: ${quantity}) for ₦${totalPrice}?`,
+          )
+        )
+          return;
 
         try {
           await updateWallet(currentUser.id, wallet.balance - totalPrice);
@@ -513,38 +549,48 @@
             currentUser.id,
             "debit",
             totalPrice,
-            `Boosted ${platform} ${service}`,
-            "social_boost"
+            `Social Boost: ${platform} ${service} (x${quantity})`,
+            "social_boost",
           );
+
           await addSocialBoost(
             currentUser.id,
             platform,
             service,
+            "N/A", // profile link not in simplified UI
+            "N/A", // target url
             quantity,
-            totalPrice
+            totalPrice,
+          );
+
+          await logUserActivity(
+            currentUser.id,
+            "purchase",
+            `Purchased social boost: ${platform} ${service}`,
           );
 
           showSuccess(
-            `Boost started!\nService: ${service}\nQuantity: ${quantity}\nYour ${platform} will be boosted soon!`
+            `✅ Boost Request Submitted!\n\nPlatform: ${platform.toUpperCase()}\nService: ${service}\nQuantity: ${quantity}\n\nYour boost will start shortly!`,
           );
-          loadBalance();
+          await loadBalance();
         } catch (error) {
           console.error("Boost error:", error);
-          showError("Boost failed. Please try again.");
+          showError("Failed to submit boost: " + error.message);
         }
       }
 
       async function loadBalance() {
         try {
           const wallet = await getWallet(currentUser.id);
-          document.getElementById(
-            "balanceDisplay"
-          ).textContent = `₦${wallet.balance.toFixed(2)}`;
-
+          const balanceFormatted = parseFloat(wallet.balance || 0).toFixed(2);
+          document.getElementById("balanceDisplay").textContent =
+            `₦${balanceFormatted}`;
           if (wallet.balance < 100) {
             document.getElementById("balanceWarning").style.display = "block";
             document.getElementById("balanceWarning").textContent =
-              "⚠️ Low balance. Top up your wallet to continue.";
+              "⚠️ Low balance. Top up to continue.";
+          } else {
+            document.getElementById("balanceWarning").style.display = "none";
           }
         } catch (error) {
           console.error("Error loading balance:", error);
@@ -554,11 +600,9 @@
       function showSuccess(msg) {
         alert("✓ " + msg);
       }
-
       function showError(msg) {
         alert("✗ " + msg);
       }
-
       function showWarning(msg) {
         alert("⚠️ " + msg);
       }

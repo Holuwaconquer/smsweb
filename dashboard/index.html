@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -17,7 +17,7 @@
           <span></span>
         </div>
         <div class="logo">
-          <div class="logo-icon">B</div>
+          <div class="logo-icon">F</div>
           <span>Femzy</span>
         </div>
         <div class="nav-links">
@@ -68,6 +68,10 @@
       </div>
       <div class="sidebar-section">
         <div class="sidebar-title">Account</div>
+        <a href="../admin/index.html" class="sidebar-link admin-link">
+          <span class="sidebar-icon">⚙️</span>
+          <span>Admin Panel</span>
+        </a>
         <a href="#" class="sidebar-link" id="logoutBtn">
           <span class="sidebar-icon">🚪</span>
           <span>Log Out</span>
@@ -135,7 +139,7 @@
         <div class="quick-access">
           <div
             class="access-card"
-            onclick="window.location.href='usa-numbers.html'"
+            onclick="window.location.href = 'usa-numbers.html'"
           >
             <div class="access-icon">📱</div>
             <h3>USA Numbers</h3>
@@ -144,7 +148,7 @@
 
           <div
             class="access-card"
-            onclick="window.location.href='all-countries.html'"
+            onclick="window.location.href = 'all-countries.html'"
           >
             <div class="access-icon">🌍</div>
             <h3>All Countries</h3>
@@ -153,7 +157,7 @@
 
           <div
             class="access-card"
-            onclick="window.location.href='history.html'"
+            onclick="window.location.href = 'history.html'"
           >
             <div class="access-icon">🕐</div>
             <h3>History</h3>
@@ -214,12 +218,50 @@
     <script>
       // Auth check on page load
       document.addEventListener("DOMContentLoaded", async () => {
-        if (!(await checkAuth())) {
+        // 1. Maintenance Check (First thing!)
+        await checkMaintenanceMode();
+
+        // 2. Auth Check
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
           window.location.href = "../auth.html";
           return;
         }
 
-        // Hamburger menu toggle
+        // 3. Load User Data
+        const profile = await getProfile(user.id);
+        if (profile) {
+          document.querySelector(".page-header h1").textContent =
+            `Welcome back, ${profile.full_name || profile.username || "User"}!`;
+
+          // Show admin link if admin
+          if (profile.is_admin) {
+            document
+              .querySelectorAll(".admin-link")
+              .forEach((el) => (el.style.display = "flex"));
+          } else {
+            document
+              .querySelectorAll(".admin-link")
+              .forEach((el) => (el.style.display = "none"));
+          }
+        }
+
+        // 4. Load Wallet Data
+        const wallet = await getWallet(user.id);
+        const balanceFormatted = `₦${parseFloat(wallet.balance || 0).toFixed(2)}`;
+        document.getElementById("balanceDisplay").textContent =
+          balanceFormatted;
+        document.getElementById("statsBalance").textContent = balanceFormatted;
+
+        const spentVal = document.querySelector(
+          ".stat-card:nth-child(3) .stat-value",
+        );
+        if (spentVal)
+          spentVal.textContent = `₦${parseFloat(wallet.total_spent || 0).toFixed(0)}`;
+
+        // 5. Hamburger menu toggle
         const hamburger = document.getElementById("hamburger");
         const sidebar = document.getElementById("sidebar");
 
@@ -253,7 +295,7 @@
                 sidebar.classList.remove("active");
               }
             },
-            true
+            true,
           );
 
           // Close sidebar when clicking a link on mobile
@@ -272,11 +314,9 @@
         if (logoutBtn) {
           logoutBtn.addEventListener("click", async (e) => {
             e.preventDefault();
-            const success = await signOut();
-            if (success) {
+            if (confirm("Are you sure you want to log out?")) {
+              await supabase.auth.signOut();
               window.location.href = "../auth.html";
-            } else {
-              alert("Logout failed. Please try again.");
             }
           });
         }

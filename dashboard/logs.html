@@ -150,7 +150,7 @@
           <span></span>
         </div>
         <div class="logo">
-          <div class="logo-icon">B</div>
+          <div class="logo-icon">F</div>
           Femzy
         </div>
       </div>
@@ -384,17 +384,27 @@
     <script src="../js/dashboard.js"></script>
     <script>
       let currentUser = null;
+      let logPrices = {};
 
       document.addEventListener("DOMContentLoaded", async () => {
-        if (!(await checkAuth())) {
+        // 1. Maintenance Check
+        await checkMaintenanceMode();
+
+        // 2. Auth Check
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
           window.location.href = "../auth.html";
           return;
         }
-        const { user } = await getCurrentUser();
         currentUser = user;
-        loadBalance();
 
-        // Check if user is admin and show admin button
+        // 3. Load UI Data
+        await loadLogPrices();
+        await loadBalance();
+
+        // Check if user is admin
         const isAdmin = await isUserAdmin(user.id);
         if (isAdmin) {
           document.getElementById("adminSection").style.display = "block";
@@ -403,9 +413,7 @@
         // Hamburger menu toggle
         const hamburger = document.getElementById("hamburger");
         const sidebar = document.querySelector(".sidebar");
-
         if (hamburger && sidebar) {
-          // Toggle sidebar on hamburger click
           function toggleSidebar(e) {
             if (e) {
               e.stopPropagation();
@@ -414,20 +422,14 @@
             hamburger.classList.toggle("active");
             sidebar.classList.toggle("active");
           }
-
           hamburger.addEventListener("click", toggleSidebar);
           hamburger.addEventListener("touchstart", toggleSidebar);
-
-          // Close sidebar when clicking outside
           document.addEventListener(
             "click",
             (e) => {
-              const isClickOnHamburger = hamburger.contains(e.target);
-              const isClickOnSidebar = sidebar.contains(e.target);
-
               if (
-                !isClickOnHamburger &&
-                !isClickOnSidebar &&
+                !hamburger.contains(e.target) &&
+                !sidebar.contains(e.target) &&
                 sidebar.classList.contains("active")
               ) {
                 hamburger.classList.remove("active");
@@ -436,47 +438,73 @@
             },
             true
           );
+        }
 
-          // Close sidebar when clicking a link on mobile
-          document.querySelectorAll(".sidebar-link").forEach((link) => {
-            link.addEventListener("click", () => {
-              if (window.innerWidth <= 768) {
-                hamburger.classList.remove("active");
-                sidebar.classList.remove("active");
+        // Logout
+        document
+          .getElementById("logoutBtn")
+          .addEventListener("click", async () => {
+            if (confirm("Are you sure?")) {
+              await supabase.auth.signOut();
+              window.location.href = "../auth.html";
+            }
+          });
+      });
+
+      async function loadLogPrices() {
+        try {
+          const pricing = await getAllActivePricing("account_log");
+          pricing.forEach((p) => {
+            logPrices[p.service_name] = p.selling_price;
+
+            // Update UI card prices
+            const cards = document.querySelectorAll(".log-card");
+            cards.forEach((card) => {
+              const name = card
+                .querySelector(".log-name")
+                .textContent.toLowerCase();
+              if (
+                p.service_name.includes(name) ||
+                name.includes(p.service_name)
+              ) {
+                card.querySelector(".log-amount").textContent = `₦${parseFloat(
+                  p.selling_price
+                ).toLocaleString()}`;
+                // Update the onclick function with real price
+                const btn = card.querySelector(".btn-buy");
+                btn.setAttribute(
+                  "onclick",
+                  `buyLog('${p.service_name}', ${p.selling_price})`
+                );
               }
             });
           });
+        } catch (error) {
+          console.error("Error loading log prices:", error);
         }
-
-        // Logout button handler
-        const logoutBtn = document.getElementById("logoutBtn");
-        if (logoutBtn) {
-          logoutBtn.addEventListener("click", async (e) => {
-            e.preventDefault();
-            const success = await signOut();
-            if (success) {
-              window.location.href = "../auth.html";
-            } else {
-              alert("Logout failed. Please try again.");
-            }
-          });
-        }
-      });
+      }
 
       async function buyLog(service, price) {
         const wallet = await getWallet(currentUser.id);
 
         if (wallet.balance < price) {
           showWarning(
-            `Insufficient balance. You need ₦${price} but have ₦${wallet.balance}`
+            `Insufficient balance. (Needed: ₦${price}, Have: ₦${wallet.balance})`
           );
           return;
         }
 
-        try {
-          const email = `user_${Date.now()}@temp.com`;
-          const password = Math.random().toString(36).slice(-12);
+        if (!confirm(`Buy ${service} account for ₦${price}?`)) return;
 
+        try {
+          // In a real app, you'd fetch a random account from inventory
+          // For now we simulate providing a fresh log
+          const email = `premium_${service}_${Math.random()
+            .toString(36)
+            .substring(7)}@Femzy .com`;
+          const password = Math.random().toString(36).slice(-10) + "!!";
+
+          // Deduct & Transaction
           await updateWallet(currentUser.id, wallet.balance - price);
           await createTransaction(
             currentUser.id,
@@ -485,12 +513,20 @@
             `Purchased ${service} account logs`,
             "logs_purchase"
           );
-          await addLogsAccount(currentUser.id, service, email, password, 30);
+
+          // Save to user's accounts
+          await addLogsAccount(currentUser.id, service, email, password, price);
+
+          await logUserActivity(
+            currentUser.id,
+            "purchase",
+            `Purchased ${service} log`
+          );
 
           showSuccess(
-            `Account purchased!\nEmail: ${email}\nPassword: ${password}\n\nSave these credentials!`
+            `✅ Account Purchased!\n\nEmail: ${email}\nPassword: ${password}\n\nCredentials saved to your History.`
           );
-          loadBalance();
+          await loadBalance();
         } catch (error) {
           console.error("Purchase error:", error);
           showError("Purchase failed. Please try again.");
@@ -500,14 +536,14 @@
       async function loadBalance() {
         try {
           const wallet = await getWallet(currentUser.id);
-          document.getElementById(
-            "balanceDisplay"
-          ).textContent = `₦${wallet.balance.toFixed(2)}`;
-
+          const balance = parseFloat(wallet.balance || 0).toFixed(2);
+          document.getElementById("balanceDisplay").textContent = `₦${balance}`;
           if (wallet.balance < 100) {
             document.getElementById("balanceWarning").style.display = "block";
             document.getElementById("balanceWarning").textContent =
-              "⚠️ Low balance. Top up your wallet to continue purchasing.";
+              "⚠️ Low balance. Top up to continue.";
+          } else {
+            document.getElementById("balanceWarning").style.display = "none";
           }
         } catch (error) {
           console.error("Error loading balance:", error);
@@ -517,11 +553,9 @@
       function showSuccess(msg) {
         alert("✓ " + msg);
       }
-
       function showError(msg) {
         alert("✗ " + msg);
       }
-
       function showWarning(msg) {
         alert("⚠️ " + msg);
       }

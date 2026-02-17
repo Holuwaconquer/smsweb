@@ -3,8 +3,408 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Profile & Settings - Femzy</title>
+    <title>Profile - Femzy</title>
     <link rel="stylesheet" href="../css/dashboard.css" />
+    <link rel="stylesheet" href="../css/admin.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+      }
+
+      .profile-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 60px 24px 40px;
+        margin: -20px -20px 40px -20px;
+        border-radius: 0 0 30px 30px;
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .profile-header::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        opacity: 0.5;
+      }
+
+      .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+        margin: 0 auto 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+        font-weight: 800;
+        color: #667eea;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        position: relative;
+        z-index: 1;
+        border: 5px solid rgba(255, 255, 255, 0.3);
+      }
+
+      .profile-name {
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 8px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .profile-email {
+        font-size: 16px;
+        opacity: 0.9;
+        position: relative;
+        z-index: 1;
+      }
+
+      .wallet-card {
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.95) 0%,
+          rgba(255, 255, 255, 0.85) 100%
+        );
+        backdrop-filter: blur(20px);
+        padding: 32px;
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+        margin-bottom: 32px;
+        border: 1px solid rgba(102, 126, 234, 0.1);
+      }
+
+      .wallet-balance {
+        text-align: center;
+        margin-bottom: 24px;
+      }
+
+      .wallet-label {
+        font-size: 14px;
+        color: #718096;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .wallet-amount {
+        font-size: 48px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: -2px;
+      }
+
+      .wallet-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+      }
+
+      .premium-card {
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.95) 0%,
+          rgba(255, 255, 255, 0.85) 100%
+        );
+        backdrop-filter: blur(20px);
+        padding: 32px;
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+        margin-bottom: 24px;
+        border: 1px solid rgba(102, 126, 234, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .premium-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+      }
+
+      .card-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .card-title span:first-child {
+        font-size: 24px;
+      }
+
+      .form-field {
+        margin-bottom: 20px;
+      }
+
+      .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #4a5568;
+        font-size: 14px;
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 14px 18px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 15px;
+        transition: all 0.3s;
+        background: white;
+      }
+
+      .form-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .form-input:disabled {
+        background: #f7fafc;
+        cursor: not-allowed;
+      }
+
+      .btn-premium {
+        padding: 14px 28px;
+        border: none;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn-premium::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+      }
+
+      .btn-premium:hover::before {
+        width: 300px;
+        height: 300px;
+      }
+
+      .btn-premium span {
+        position: relative;
+        z-index: 1;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-secondary {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+      }
+
+      .btn-secondary:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        transform: translateY(-2px);
+      }
+
+      .btn-danger {
+        background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+        color: white;
+      }
+
+      .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 32px rgba(245, 87, 108, 0.4);
+      }
+
+      .support-link {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 20px;
+        background: linear-gradient(
+          135deg,
+          rgba(102, 126, 234, 0.05) 0%,
+          rgba(118, 75, 162, 0.05) 100%
+        );
+        border-radius: 12px;
+        text-decoration: none;
+        color: #2d3748;
+        transition: all 0.3s;
+        margin-bottom: 12px;
+        border: 2px solid transparent;
+      }
+
+      .support-link:hover {
+        background: linear-gradient(
+          135deg,
+          rgba(102, 126, 234, 0.1) 0%,
+          rgba(118, 75, 162, 0.1) 100%
+        );
+        border-color: #667eea;
+        transform: translateX(4px);
+      }
+
+      .support-icon {
+        width: 48px;
+        height: 48px;
+        background: white;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      }
+
+      .support-info h3 {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+
+      .support-info p {
+        font-size: 13px;
+        color: #718096;
+      }
+
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+      }
+
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #cbd5e0;
+        transition: 0.4s;
+        border-radius: 34px;
+      }
+
+      .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      input:checked + .toggle-slider {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+
+      input:checked + .toggle-slider:before {
+        transform: translateX(26px);
+      }
+
+      .feature-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .feature-row:last-child {
+        border-bottom: none;
+      }
+
+      .danger-zone {
+        border: 2px solid #f5576c;
+        background: linear-gradient(
+          135deg,
+          rgba(245, 87, 108, 0.05) 0%,
+          rgba(240, 147, 251, 0.05) 100%
+        );
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .stat-item {
+        text-align: center;
+        padding: 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      }
+
+      .stat-value {
+        font-size: 32px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 4px;
+      }
+
+      .stat-label {
+        font-size: 12px;
+        color: #718096;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+      }
+    </style>
   </head>
   <body>
     <!-- Top Navigation -->
@@ -16,8 +416,8 @@
           <span></span>
         </div>
         <div class="logo">
-          <div class="logo-icon">B</div>
-          <span>Femzy</span>
+          <div class="logo-icon">F</div>
+          <span>Femzy </span>
         </div>
       </div>
       <div class="nav-right">
@@ -43,20 +443,83 @@
           <span>Profile</span>
         </a>
       </div>
+      <div class="sidebar-section">
+        <a href="#" class="sidebar-link" id="logoutBtnSidebar">
+          <span class="sidebar-icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </div>
     </aside>
 
     <!-- Main Content -->
     <main class="main-content">
-      <div class="page-header">
-        <h1>Profile & Settings</h1>
-        <p>Manage your account settings and preferences</p>
+      <!-- Profile Header -->
+      <div class="profile-header">
+        <div class="profile-avatar" id="profileAvatar">F</div>
+        <h1 class="profile-name" id="profileName">Welcome</h1>
+        <p class="profile-email" id="profileEmail">user@example.com</p>
+      </div>
+
+      <!-- Wallet Card -->
+      <div class="wallet-card">
+        <div class="wallet-balance">
+          <div class="wallet-label">Total Balance</div>
+          <div class="wallet-amount" id="walletBalance">₦0.00</div>
+        </div>
+        <div class="wallet-actions">
+          <button class="btn-premium btn-primary" id="addFundsBtn">
+            <span>💳</span>
+            <span>Add Funds</span>
+          </button>
+          <button
+            class="btn-premium btn-secondary"
+            onclick="window.location.href = 'wallet.html'"
+          >
+            <span>📊</span>
+            <span>View Transactions</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Account Stats -->
+      <div class="premium-card">
+        <div class="card-title">
+          <span>📈</span>
+          <span>Account Statistics</span>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value" id="totalSpent">₦0</div>
+            <div class="stat-label">Total Spent</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="totalOrders">0</div>
+            <div class="stat-label">Orders</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="memberSince">...</div>
+            <div class="stat-label">Member Since</div>
+          </div>
+        </div>
       </div>
 
       <!-- Personal Information -->
-      <div class="content-section">
-        <h2 class="section-title">👤 Personal Information</h2>
+      <div class="premium-card">
+        <div class="card-title">
+          <span>👤</span>
+          <span>Personal Information</span>
+        </div>
         <form id="profileForm">
-          <div class="form-group">
+          <div class="form-field">
+            <label class="form-label">Full Name</label>
+            <input
+              type="text"
+              class="form-input"
+              id="fullName"
+              placeholder="Your full name"
+            />
+          </div>
+          <div class="form-field">
             <label class="form-label">Username</label>
             <input
               type="text"
@@ -65,7 +528,7 @@
               placeholder="Your username"
             />
           </div>
-          <div class="form-group">
+          <div class="form-field">
             <label class="form-label">Email Address</label>
             <input
               type="email"
@@ -73,149 +536,109 @@
               id="email"
               placeholder="you@example.com"
               disabled
-              style="background: #f5f5f5"
             />
-            <small style="color: #666; font-size: 12px"
+            <small style="color: #718096; font-size: 12px"
               >Email cannot be changed</small
             >
           </div>
-          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <div class="form-field">
+            <label class="form-label">Phone Number</label>
+            <input
+              type="tel"
+              class="form-input"
+              id="phoneNumber"
+              placeholder="+234 XXX XXX XXXX"
+            />
+          </div>
+          <button type="submit" class="btn-premium btn-primary">
+            <span>💾</span>
+            <span>Save Changes</span>
+          </button>
         </form>
       </div>
 
-      <!-- Security -->
-      <div class="content-section">
-        <h2 class="section-title">🔒 Security</h2>
-        <div>
-          <p style="margin-bottom: 15px; color: #666">Password</p>
-          <button class="btn btn-secondary" id="changePasswordBtn">
-            Change Password
-          </button>
+      <!-- Preferences -->
+      <div class="premium-card">
+        <div class="card-title">
+          <span>⚙️</span>
+          <span>Preferences</span>
         </div>
-      </div>
-
-      <!-- Appearance -->
-      <div class="content-section">
-        <h2 class="section-title">🎨 Appearance</h2>
-        <div>
-          <div
-            style="
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-            "
-          >
-            <div>
-              <p style="font-weight: 500; margin-bottom: 5px">Dark Mode</p>
-              <p style="color: #666; font-size: 14px">
-                Toggle between light and dark theme
-              </p>
-            </div>
-            <label
-              style="
-                position: relative;
-                display: inline-block;
-                width: 60px;
-                height: 34px;
-              "
-            >
-              <input
-                type="checkbox"
-                id="darkModeToggle"
-                style="opacity: 0; width: 0; height: 0"
-              />
-              <span
-                style="
-                  position: absolute;
-                  cursor: pointer;
-                  top: 0;
-                  left: 0;
-                  right: 0;
-                  bottom: 0;
-                  background-color: #ccc;
-                  transition: 0.4s;
-                  border-radius: 34px;
-                "
-              ></span>
-              <span
-                style="
-                  position: absolute;
-                  content: '';
-                  height: 26px;
-                  width: 26px;
-                  left: 4px;
-                  bottom: 4px;
-                  background-color: white;
-                  transition: 0.4s;
-                  border-radius: 50%;
-                "
-              ></span>
-            </label>
+        <div class="feature-row">
+          <div>
+            <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px">
+              Dark Mode
+            </h3>
+            <p style="font-size: 13px; color: #718096">
+              Toggle between light and dark theme
+            </p>
           </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="darkModeToggle" />
+            <span class="toggle-slider"></span>
+          </label>
         </div>
       </div>
 
       <!-- Support -->
-      <div class="content-section">
-        <h2 class="section-title">🤝 Support</h2>
-        <div style="display: grid; gap: 15px">
-          <a
-            href="#"
-            id="telegramLink"
-            style="
-              display: flex;
-              align-items: center;
-              gap: 10px;
-              padding: 15px;
-              background: #f8f9fa;
-              border-radius: 8px;
-              text-decoration: none;
-              color: #333;
-              transition: all 0.3s;
-            "
-          >
-            <span style="font-size: 24px">💬</span>
-            <div>
-              <p style="font-weight: 500">Join us on Telegram</p>
-              <p style="font-size: 12px; color: #666">Get instant support</p>
-            </div>
-          </a>
-          <a
-            href="#"
-            id="whatsappLink"
-            style="
-              display: flex;
-              align-items: center;
-              gap: 10px;
-              padding: 15px;
-              background: #f8f9fa;
-              border-radius: 8px;
-              text-decoration: none;
-              color: #333;
-              transition: all 0.3s;
-            "
-          >
-            <span style="font-size: 24px">📱</span>
-            <div>
-              <p style="font-weight: 500">WhatsApp Support</p>
-              <p style="font-size: 12px; color: #666">Chat with us directly</p>
-            </div>
-          </a>
+      <div class="premium-card">
+        <div class="card-title">
+          <span>🤝</span>
+          <span>Support</span>
         </div>
+        <a href="#" class="support-link" id="whatsappLink">
+          <div class="support-icon">📱</div>
+          <div class="support-info">
+            <h3>WhatsApp Support</h3>
+            <p>Chat with us directly on WhatsApp</p>
+          </div>
+        </a>
+        <a href="#" class="support-link" id="telegramLink">
+          <div class="support-icon">💬</div>
+          <div class="support-info">
+            <h3>Join Our Telegram</h3>
+            <p>Get instant support and updates</p>
+          </div>
+        </a>
       </div>
 
-      <!-- Danger Zone -->
-      <div class="content-section" style="border: 2px solid #ff4757">
-        <h2 class="section-title" style="color: #ff4757">⚠️ Danger Zone</h2>
-        <div>
-          <p style="margin-bottom: 15px; color: #666">Log Out</p>
-          <p style="font-size: 14px; color: #999; margin-bottom: 15px">
-            Sign out of your account on this device
-          </p>
-          <button class="btn btn-danger" id="logoutBtn">🚪 Log Out</button>
+      <!-- Security (Danger Zone) -->
+      <div class="premium-card danger-zone">
+        <div class="card-title" style="color: #f5576c">
+          <span>⚠️</span>
+          <span>Danger Zone</span>
+        </div>
+        <div class="feature-row">
+          <div>
+            <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px">
+              Change Password
+            </h3>
+            <p style="font-size: 13px; color: #718096">
+              Update your account password
+            </p>
+          </div>
+          <button class="btn-premium btn-secondary" id="changePasswordBtn">
+            Change
+          </button>
+        </div>
+        <div class="feature-row">
+          <div>
+            <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px">
+              Logout
+            </h3>
+            <p style="font-size: 13px; color: #718096">
+              Sign out of your account
+            </p>
+          </div>
+          <button class="btn-premium btn-danger" id="logoutBtn">
+            <span>🚪</span>
+            <span>Logout</span>
+          </button>
         </div>
       </div>
     </main>
+
+    <!-- Paystack Script -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
 
     <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -223,142 +646,204 @@
     <!-- Scripts -->
     <script src="../js/supabase-config.js"></script>
     <script src="../js/dashboard.js"></script>
+    <script src="../js/payment.js"></script>
     <script>
-      // Profile specific functionality
       let currentUser = null;
 
       document.addEventListener("DOMContentLoaded", async () => {
-        await checkAuth();
+        await checkAuthentication();
         await loadProfile();
-        initProfileUI();
-
-        // Hamburger menu toggle
-        const hamburger = document.getElementById("hamburger");
-        const sidebar = document.getElementById("sidebar");
-
-        if (hamburger && sidebar) {
-          // Toggle sidebar on hamburger click
-          function toggleSidebar(e) {
-            if (e) {
-              e.stopPropagation();
-              e.preventDefault();
-            }
-            hamburger.classList.toggle("active");
-            sidebar.classList.toggle("active");
-          }
-
-          hamburger.addEventListener("click", toggleSidebar);
-          hamburger.addEventListener("touchstart", toggleSidebar);
-
-          // Close sidebar when clicking outside
-          document.addEventListener(
-            "click",
-            (e) => {
-              const isClickOnHamburger = hamburger.contains(e.target);
-              const isClickOnSidebar = sidebar.contains(e.target);
-
-              if (
-                !isClickOnHamburger &&
-                !isClickOnSidebar &&
-                sidebar.classList.contains("active")
-              ) {
-                hamburger.classList.remove("active");
-                sidebar.classList.remove("active");
-              }
-            },
-            true
-          );
-
-          // Close sidebar when clicking a link on mobile
-          document.querySelectorAll(".sidebar-link").forEach((link) => {
-            link.addEventListener("click", () => {
-              if (window.innerWidth <= 768) {
-                hamburger.classList.remove("active");
-                sidebar.classList.remove("active");
-              }
-            });
-          });
-        }
+        initUI();
       });
 
-      async function checkAuth() {
-        const isAuth = await Auth.checkAuth();
-        if (!isAuth) {
+      async function checkAuthentication() {
+        try {
+          const {
+            data: { user },
+            error,
+          } = await supabase.auth.getUser();
+
+          if (error || !user) {
+            window.location.href = "../auth.html";
+            return;
+          }
+
+          currentUser = user;
+        } catch (error) {
+          console.error("Auth error:", error);
           window.location.href = "../auth.html";
-          return;
         }
-        const { user } = await Auth.getCurrentUser();
-        currentUser = user;
       }
 
       async function loadProfile() {
-        const result = await DB.getProfile(currentUser.id);
-        if (result.success) {
-          document.getElementById("username").value =
-            result.data.username || "";
-          document.getElementById("email").value = result.data.email;
-        }
+        try {
+          // Load profile
+          const profile = await getProfile(currentUser.id);
+          if (profile) {
+            document.getElementById("fullName").value = profile.full_name || "";
+            document.getElementById("username").value = profile.username || "";
+            document.getElementById("email").value = profile.email || "";
+            document.getElementById("phoneNumber").value =
+              profile.phone_number || "";
 
-        const walletResult = await DB.getWallet(currentUser.id);
-        if (walletResult.success) {
-          document.getElementById(
-            "balanceDisplay"
-          ).textContent = `₦${walletResult.data.balance.toFixed(2)}`;
+            document.getElementById("profileName").textContent =
+              profile.full_name || profile.username || "User";
+            document.getElementById("profileEmail").textContent = profile.email;
+
+            // Avatar initial
+            const initial = (profile.full_name ||
+              profile.username ||
+              profile.email ||
+              "U")[0].toUpperCase();
+            document.getElementById("profileAvatar").textContent = initial;
+
+            // Member since
+            const memberDate = new Date(profile.created_at);
+            const monthYear = memberDate.toLocaleDateString("en-US", {
+              month: "short",
+              year: "numeric",
+            });
+            document.getElementById("memberSince").textContent = monthYear;
+          }
+
+          // Load wallet
+          const wallet = await getWallet(currentUser.id);
+          if (wallet) {
+            document.getElementById(
+              "walletBalance"
+            ).textContent = `₦${parseFloat(wallet.balance).toFixed(2)}`;
+            document.getElementById(
+              "balanceDisplay"
+            ).textContent = `₦${parseFloat(wallet.balance).toFixed(2)}`;
+            document.getElementById("totalSpent").textContent = `₦${parseFloat(
+              wallet.total_spent || 0
+            ).toFixed(0)}`;
+          }
+
+          // Load transaction count
+          const transactions = await getTransactions(currentUser.id);
+          document.getElementById("totalOrders").textContent =
+            transactions.length;
+        } catch (error) {
+          console.error("Error loading profile:", error);
         }
       }
 
-      function initProfileUI() {
+      function initUI() {
         // Profile form
-        const profileForm = document.getElementById("profileForm");
-        profileForm.addEventListener("submit", async (e) => {
-          e.preventDefault();
+        document
+          .getElementById("profileForm")
+          .addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-          const username = document.getElementById("username").value;
+            const updates = {
+              full_name: document.getElementById("fullName").value,
+              username: document.getElementById("username").value,
+              phone_number: document.getElementById("phoneNumber").value,
+            };
 
-          const result = await DB.updateProfile(currentUser.id, { username });
+            try {
+              await supabase
+                .from("profiles")
+                .update(updates)
+                .eq("id", currentUser.id);
 
-          if (result.success) {
-            alert("✅ Profile updated successfully!");
-          } else {
-            alert("❌ Error updating profile: " + result.error);
-          }
-        });
+              alert("✅ Profile updated successfully!");
+              await loadProfile();
+            } catch (error) {
+              alert("❌ Error updating profile: " + error.message);
+            }
+          });
 
-        // Change password
-        const changePasswordBtn = document.getElementById("changePasswordBtn");
-        changePasswordBtn.addEventListener("click", () => {
-          alert(
-            "Password change functionality will redirect to Supabase reset password flow"
-          );
-          // In production, implement password reset via Supabase
-        });
+        // Add funds
+        document
+          .getElementById("addFundsBtn")
+          .addEventListener("click", async () => {
+            const amount = prompt("Enter amount to add (₦):");
+            if (amount && !isNaN(amount) && parseFloat(amount) > 0) {
+              try {
+                const profile = await getProfile(currentUser.id);
+                const result = await addFundsToWallet(
+                  currentUser.id,
+                  profile.email,
+                  parseFloat(amount)
+                );
 
-        // Dark mode toggle
+                if (result.success) {
+                  alert(result.message);
+                  await loadProfile();
+                } else {
+                  alert("Payment cancelled or failed");
+                }
+              } catch (error) {
+                alert("Error: " + error.message);
+              }
+            }
+          });
+
+        // Dark mode
         const darkModeToggle = document.getElementById("darkModeToggle");
         darkModeToggle.checked = localStorage.getItem("darkMode") === "true";
-
         darkModeToggle.addEventListener("change", () => {
           localStorage.setItem("darkMode", darkModeToggle.checked);
           window.location.reload();
         });
 
-        // WhatsApp link
-        const whatsappLink = document.getElementById("whatsappLink");
-        whatsappLink.addEventListener("click", (e) => {
-          e.preventDefault();
-          const whatsappNumber = "2349012726301";
-          const message = encodeURIComponent("Hello, I need help with Femzy");
-          window.open(
-            `https://wa.me/${whatsappNumber}?text=${message}`,
-            "_blank"
-          );
+        // Change password
+        document
+          .getElementById("changePasswordBtn")
+          .addEventListener("click", async () => {
+            alert("Password reset link will be sent to your email");
+            // Implement Supabase password reset
+          });
+
+        // Logout
+        const logout = async () => {
+          if (confirm("Are you sure you want to logout?")) {
+            await signOut();
+            window.location.href = "../auth.html";
+          }
+        };
+
+        document.getElementById("logoutBtn").addEventListener("click", logout);
+        document
+          .getElementById("logoutBtnSidebar")
+          .addEventListener("click", (e) => {
+            e.preventDefault();
+            logout();
+          });
+
+        // Support links
+        document
+          .getElementById("whatsappLink")
+          .addEventListener("click", (e) => {
+            e.preventDefault();
+            window.open(
+              "https://wa.me/2349012726301?text=Hello,%20I%20need%20help",
+              "_blank"
+            );
+          });
+
+        document
+          .getElementById("telegramLink")
+          .addEventListener("click", (e) => {
+            e.preventDefault();
+            window.open("https://t.me/yourusername", "_blank");
+          });
+
+        // Hamburger
+        document.getElementById("hamburger").addEventListener("click", () => {
+          document.getElementById("hamburger").classList.toggle("active");
+          document.getElementById("sidebar").classList.toggle("active");
         });
 
-        // Telegram link (replace with your actual telegram link)
-        const telegramLink = document.getElementById("telegramLink");
-        telegramLink.addEventListener("click", (e) => {
-          e.preventDefault();
-          window.open("https://t.me/yourusername", "_blank");
+        // Theme toggle
+        document.getElementById("themeToggle").addEventListener("click", () => {
+          const isDark = document.body.classList.toggle("dark-theme");
+          localStorage.setItem("darkMode", isDark);
+          document.getElementById("themeToggle").textContent = isDark
+            ? "☀️"
+            : "🌙";
         });
       }
     </script>
