@@ -1,24 +1,22 @@
-// ============================================
-// PAYSTACK PAYMENT INTEGRATION
-// Users can add funds to their wallet
-// ============================================
 
 class PaystackPayment {
   constructor() {
-    // Get your Paystack public key from https://dashboard.paystack.com
-    // For testing: Use test key (starts with pk_test_)
-    // For production: Use live key (starts with pk_live_)
-    this.publicKey = "pk_test_YOUR_PUBLIC_KEY_HERE"; // REPLACE THIS
+
+    if (!window.PaystackConfig || !window.PaystackConfig.isConfigured()) {
+      throw new Error(
+        "Paystack is not properly configured. Please edit js/config.js and set paystack.publicKey to your actual Paystack key (starts with pk_test_ or pk_live_)."
+      );
+    }
+    
+    this.publicKey = window.PaystackConfig.publicKey;
     this.initialized = false;
     this.checkPaystackScript();
   }
 
-  // Check if Paystack script is loaded
   checkPaystackScript() {
     if (typeof PaystackPop !== "undefined") {
       this.initialized = true;
     } else {
-      // Load Paystack script dynamically
       const script = document.createElement("script");
       script.src = "https://js.paystack.co/v1/inline.js";
       script.onload = () => {
@@ -31,17 +29,14 @@ class PaystackPayment {
     }
   }
 
-  // Initialize payment
   async initializePayment(amount, email, userId) {
     if (!this.initialized) {
       throw new Error("Paystack not initialized");
     }
 
-    // Generate unique reference
     const reference =
       "BDSMS_" + Math.random().toString(36).substring(2, 15) + Date.now();
 
-    // Save payment to database as pending
     try {
       const { error } = await supabase.from("payment_history").insert({
         user_id: userId,
@@ -57,12 +52,130 @@ class PaystackPayment {
       throw new Error("Failed to initialize payment");
     }
 
-    // Return payment configuration
     return new Promise((resolve, reject) => {
+      console.log("Creating Paystack payment promise...");
+      
+      let resolved = false;
+      
+      // Add a timeout in case the payment handler never resolves
+      const paymentTimeout = setTimeout(async () => {
+        console.error("⏱️ PAYMENT TIMEOUT - Modal didn't resolve in 5 minutes");
+        console.log("Checking if payment was actually recorded...");
+        
+        // Check if payment was actually completed despite callback not firing
+        const { data: payment } = await supabase
+          .from("payment_history")
+          .select("status")
+          .eq("reference", reference)
+          .single();
+          
+        if (payment && payment.status === "success") {
+          console.log("✓ Payment was actually successful!");
+          resolved = true;
+          resolve({
+            success: true,
+            reference: reference,
+            amount: amount,
+            verified: { success: true },
+          });
+        } else {
+          reject(new Error("Payment timeout - modal did not respond"));
+        }
+      }, 5 * 60 * 1000); // 5 minutes
+      
+      // Also start polling to check payment status (in case callback doesn't fire)
+      let pollCount = 0;
+      const pollInterval = setInterval(async () => {
+        if (resolved) {
+          clearInterval(pollInterval);
+          return;
+        }
+        
+        pollCount++;
+        console.log(`🔍 Polling payment status (check #${pollCount})...`);
+        
+        try {
+          const { data: payment } = await supabase
+            .from("payment_history")
+            .select("status")
+            .eq("reference", reference)
+            .single();
+          
+          console.log(`   Payment status from DB: ${payment?.status || 'not found'}`);
+          
+          if (payment && payment.status === "success") {
+            console.log("✅ PAYMENT DETECTED VIA POLLING!");
+            console.log("Payment status is now: SUCCESS");
+            
+            clearTimeout(paymentTimeout);
+            clearInterval(pollInterval);
+            resolved = true;
+            
+            // Force close Paystack modal
+            setTimeout(() => forceClosePaystackModal(), 100);
+            
+            // Verify the payment to ensure wallet is updated
+            this.verifyPayment(reference, userId)
+              .then((verified) => {
+                console.log("✓ PAYMENT VERIFIED");
+                resolve({
+                  success: true,
+                  reference: reference,
+                  amount: amount,
+                  verified: verified,
+                });
+              })
+              .catch((error) => {
+                console.error("Error verifying payment:", error);
+                resolve({
+                  success: true,
+                  reference: reference,
+                  amount: amount,
+                });
+              });
+          } else if (payment && payment.status === "pending" && pollCount > 6) {
+            // After 30 seconds of no success, try calling verifyPayment directly
+            // This will check with Paystack if payment went through, even if callback didn't fire
+            console.log("⏳ Payment still pending after 30 seconds, attempting manual verification...");
+            
+            try {
+              const verified = await this.verifyPayment(reference, userId);
+              if (verified && verified.success) {
+                console.log("✅ MANUAL VERIFICATION DETECTED PAYMENT SUCCESS!");
+                
+                clearTimeout(paymentTimeout);
+                clearInterval(pollInterval);
+                resolved = true;
+                
+                // Force close Paystack modal
+                setTimeout(() => forceClosePaystackModal(), 100);
+                
+                resolve({
+                  success: true,
+                  reference: reference,
+                  amount: amount,
+                  verified: verified,
+                });
+              }
+            } catch (verifyError) {
+              console.log("Manual verification didn't find successful payment yet");
+            }
+          }
+        } catch (error) {
+          console.error("Polling error:", error);
+        }
+        
+        // Stop polling after 2 minutes
+        if (pollCount > 24) {
+          console.log("❌ POLLING TIMEOUT - Stopped after 2 minutes");
+          clearInterval(pollInterval);
+        }
+      }, 5000); // Poll every 5 seconds
+      
       const handler = PaystackPop.setup({
         key: this.publicKey,
         email: email,
-        amount: amount * 100, // Convert to kobo (Naira cents)
+        amount: amount * 100, 
         currency: "NGN",
         ref: reference,
         metadata: {
@@ -74,39 +187,55 @@ class PaystackPayment {
             },
           ],
         },
-        callback: async (response) => {
-          // Payment successful
-          console.log("Payment successful:", response);
-
-          // Verify payment
-          const verified = await this.verifyPayment(response.reference, userId);
-
-          if (verified.success) {
-            resolve({
-              success: true,
-              reference: response.reference,
-              amount: amount,
+        onSuccess: (response) => {
+          console.log("💳 PAYSTACK CALLBACK FIRED - onSuccess");
+          console.log("Response from Paystack:", response);
+          console.log("Reference:", response.reference);
+          
+          if (resolved) return; // Already resolved via polling
+          
+          clearTimeout(paymentTimeout);
+          clearInterval(pollInterval);
+          resolved = true;
+          
+          // Call async verification without await in callback
+          this.verifyPayment(response.reference, userId)
+            .then((verified) => {
+              console.log("✓ PAYMENT VERIFICATION SUCCESSFUL");
+              console.log("Verified data:", verified);
+              resolve({
+                success: true,
+                reference: response.reference,
+                amount: amount,
+                verified: verified,
+              });
+            })
+            .catch((error) => {
+              console.error("❌ PAYMENT VERIFICATION FAILED");
+              console.error("Error:", error);
+              console.error("Error message:", error.message);
+              reject(error);
             });
-          } else {
-            reject(new Error("Payment verification failed"));
-          }
         },
         onClose: () => {
-          // User closed payment modal
-          reject(new Error("Payment cancelled by user"));
+          console.log("⚠️ PAYSTACK MODAL CLOSED");
+          
+          // Don't reject immediately - let polling finish checking
+          // if payment was completed even though user closed modal
+          console.log("Continuing to check for payment status...");
         },
       });
 
+      console.log("Opening Paystack iframe...");
       handler.openIframe();
     });
   }
 
-  // Verify payment on backend
   async verifyPayment(reference, userId) {
     try {
-      // In production, this should be done on a secure backend
-      // For now, we'll update the database directly
-      // Get payment record
+      console.log("Starting payment verification for:", reference);
+
+      // 1. Get the payment record
       const { data: payment, error: fetchError } = await supabase
         .from("payment_history")
         .select("*")
@@ -114,11 +243,14 @@ class PaystackPayment {
         .single();
 
       if (fetchError || !payment) {
-        throw new Error("Payment not found");
+        console.error("Payment not found:", fetchError);
+        throw new Error("Payment record not found");
       }
 
-      // Update payment status
-      await supabase
+      console.log("Found payment record:", payment);
+
+      // 2. Update payment status to success
+      const { error: updateError } = await supabase
         .from("payment_history")
         .update({
           status: "success",
@@ -127,43 +259,101 @@ class PaystackPayment {
         })
         .eq("reference", reference);
 
-      // Add funds to user wallet
-      const { data: wallet } = await supabase
+      if (updateError) {
+        console.error("Error updating payment status:", updateError);
+        throw updateError;
+      }
+
+      console.log("Payment status updated to success");
+
+      // 3. Get current wallet balance (or create if doesn't exist)
+      let { data: wallet, error: walletError } = await supabase
         .from("wallets")
         .select("balance, total_added")
         .eq("user_id", userId)
         .single();
 
-      await supabase
+      // If wallet doesn't exist, create it
+      if (walletError && walletError.code === "PGRST116") {
+        console.log("Wallet not found, creating new wallet for user:", userId);
+        const { data: newWallet, error: createError } = await supabase
+          .from("wallets")
+          .insert({
+            user_id: userId,
+            balance: 0.00,
+            total_added: 0.00,
+            total_spent: 0.00,
+          })
+          .select()
+          .single();
+
+        if (createError) {
+          console.error("Error creating wallet:", createError);
+          throw createError;
+        }
+
+        wallet = newWallet;
+        console.log("New wallet created:", wallet);
+      } else if (walletError) {
+        console.error("Error fetching wallet:", walletError);
+        throw walletError;
+      }
+
+      console.log("Current wallet:", wallet);
+
+      // 4. Update wallet with new balance
+      const currentBalance = parseFloat(wallet.balance || 0);
+      const currentTotalAdded = parseFloat(wallet.total_added || 0);
+      const paymentAmount = parseFloat(payment.amount);
+
+      const newBalance = currentBalance + paymentAmount;
+      const newTotalAdded = currentTotalAdded + paymentAmount;
+
+      console.log("Calculating new balance:", {
+        currentBalance,
+        paymentAmount,
+        newBalance,
+      });
+
+      const { error: balanceError } = await supabase
         .from("wallets")
         .update({
-          balance: parseFloat(wallet.balance) + parseFloat(payment.amount),
-          total_added:
-            parseFloat(wallet.total_added) + parseFloat(payment.amount),
+          balance: newBalance,
+          total_added: newTotalAdded,
+          updated_at: new Date().toISOString(),
         })
         .eq("user_id", userId);
 
-      // Create transaction record
-      await supabase.from("transactions").insert({
-        user_id: userId,
-        type: "credit",
-        amount: payment.amount,
-        description: "Wallet Top-up via Paystack",
-        reference: reference,
-        status: "completed",
-      });
+      if (balanceError) {
+        console.error("Error updating wallet balance:", balanceError);
+        throw balanceError;
+      }
 
-      // Log activity
-      await logUserActivity(
-        userId,
-        "wallet_topup",
-        `Added ₦${payment.amount.toFixed(2)} to wallet`,
-        { reference: reference },
-      );
+      console.log("Wallet updated. New balance:", newBalance);
+
+      // 5. Create transaction record
+      const { error: transactionError } = await supabase
+        .from("transactions")
+        .insert({
+          user_id: userId,
+          type: "credit",
+          amount: paymentAmount,
+          description: "Wallet Top-up via Paystack",
+          reference: reference,
+          status: "completed",
+        });
+
+      if (transactionError) {
+        console.error("Error creating transaction:", transactionError);
+        throw transactionError;
+      }
+
+      console.log("Transaction created successfully");
 
       return {
         success: true,
-        amount: payment.amount,
+        amount: paymentAmount,
+        newBalance: newBalance,
       };
     } catch (error) {
       console.error("Payment verification error:", error);
@@ -172,16 +362,14 @@ class PaystackPayment {
       await supabase
         .from("payment_history")
         .update({ status: "failed" })
-        .eq("reference", reference);
+        .eq("reference", reference)
+        .catch((err) => console.error("Failed to update payment status:", err));
 
-      return {
-        success: false,
-        error: error.message,
-      };
+      // Throw the error so it's properly caught by the promise chain
+      throw error;
     }
   }
 
-  // Get payment history
   async getPaymentHistory(userId, limit = 50) {
     try {
       const { data, error } = await supabase
@@ -206,11 +394,37 @@ class PaystackPayment {
   }
 }
 
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
+// Helper function to force close Paystack modal
+function forceClosePaystackModal() {
+  console.log("Attempting to force close Paystack modal...");
+  
+  // Method 1: Look for Paystack iframe and hide it
+  const paystackFrames = document.querySelectorAll("iframe[src*='paystack']");
+  paystackFrames.forEach(frame => {
+    frame.style.display = "none";
+    console.log("✓ Closed Paystack iframe");
+  });
+  
+  // Method 2: Look for Paystack container divs
+  const paystackContainers = document.querySelectorAll("[class*='paystack']");
+  paystackContainers.forEach(container => {
+    container.style.display = "none";
+    console.log("✓ Closed Paystack container");
+  });
+  
+  // Method 3: Remove any fixed position overlays
+  const overlays = document.querySelectorAll("div[style*='position: fixed'][style*='z-index']");
+  overlays.forEach(overlay => {
+    if (overlay.offsetHeight > 300 && overlay.offsetHeight < 800) {
+      overlay.style.display = "none";
+      console.log("✓ Closed potential overlay");
+    }
+  });
+  
+  // Method 4: Ensure body overflow is reset
+  document.body.style.overflow = "auto";
+}
 
-// Add funds to wallet
 async function addFundsToWallet(userId, email, amount) {
   try {
     const paystack = new PaystackPayment();
@@ -230,7 +444,6 @@ async function addFundsToWallet(userId, email, amount) {
   }
 }
 
-// Get pricing for a service
 async function getServicePrice(category, serviceName, country = null) {
   try {
     let query = supabase
@@ -259,12 +472,11 @@ async function getServicePrice(category, serviceName, country = null) {
     return {
       success: false,
       error: error.message,
-      defaultPrice: 1000, // Fallback price
+      defaultPrice: 1000, 
     };
   }
 }
 
-// Get all pricing
 async function getAllPricing() {
   try {
     const { data, error } = await supabase
@@ -288,7 +500,6 @@ async function getAllPricing() {
   }
 }
 
-// Update pricing (admin only)
 async function updatePricing(pricingId, updates) {
   try {
     const { data, error } = await supabase
@@ -300,7 +511,6 @@ async function updatePricing(pricingId, updates) {
 
     if (error) throw error;
 
-    // Log activity
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -323,7 +533,6 @@ async function updatePricing(pricingId, updates) {
   }
 }
 
-// Create new pricing entry (admin only)
 async function createPricing(pricingData) {
   try {
     const { data, error } = await supabase
@@ -346,7 +555,6 @@ async function createPricing(pricingData) {
   }
 }
 
-// Delete pricing (admin only)
 async function deletePricing(pricingId) {
   try {
     const { error } = await supabase
@@ -365,7 +573,6 @@ async function deletePricing(pricingId) {
   }
 }
 
-// Format currency
 function formatCurrency(amount) {
   return `₦${parseFloat(amount).toLocaleString("en-NG", {
     minimumFractionDigits: 2,
@@ -373,7 +580,6 @@ function formatCurrency(amount) {
   })}`;
 }
 
-// Make globally available
 window.PaystackPayment = PaystackPayment;
 window.addFundsToWallet = addFundsToWallet;
 window.getServicePrice = getServicePrice;

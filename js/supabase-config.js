@@ -1,29 +1,41 @@
-// Supabase Configuration
-// Environment variables are loaded from .env file during build
-// For Vercel: Set environment variables in Project Settings → Environment Variables
+// Supabase Configuration (Vanilla JavaScript)
+// For development: Set credentials in js/config.js
+// For production (Vercel): Environment variables injected via window
 
-// Get configuration from environment variables or use defaults
-// In development: uses values from .env.local
+// Get configuration from config.js or window variables
+// In development: uses values from js/config.js
 // In production (Vercel): uses environment variables set in Vercel dashboard
 const getSupabaseConfig = () => {
-  const url = process.env.VITE_SUPABASE_URL || window.__SUPABASE_URL__;
-  const anonKey =
-    process.env.VITE_SUPABASE_ANON_KEY || window.__SUPABASE_ANON_KEY__;
+  // Try to get from window.AppConfig (set in config.js)
+  if (window.AppConfig && window.AppConfig.supabase) {
+    const url = window.AppConfig.supabase.url;
+    const anonKey = window.AppConfig.supabase.anonKey;
 
-  if (!url || !anonKey) {
-    throw new Error(
-      "Supabase configuration not found. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables."
-    );
+    if (url && anonKey) {
+      return { url, anonKey };
+    }
   }
 
-  return { url, anonKey };
+  // Try to get from window variables (Vercel environment injection)
+  const url = window.__SUPABASE_URL__;
+  const anonKey = window.__SUPABASE_ANON_KEY__;
+
+  if (url && anonKey) {
+    return { url, anonKey };
+  }
+
+  throw new Error(
+    "Supabase configuration not found. Please:\n" +
+    "1. For local development: Edit js/config.js and set supabase.url and supabase.anonKey\n" +
+    "2. For Vercel: Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel's Environment Variables"
+  );
 };
 
 let SUPABASE_CONFIG;
 try {
   SUPABASE_CONFIG = getSupabaseConfig();
 } catch (error) {
-  console.warn("Warning:", error.message);
+  console.warn("⚠️ Warning:", error.message);
   // Use placeholder values for dev - must be configured for production
   SUPABASE_CONFIG = {
     url: "https://bsgrvwykbyqunlvlqvnt.supabase.co",

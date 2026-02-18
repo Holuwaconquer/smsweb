@@ -212,26 +212,25 @@
     <script src="https://js.paystack.co/v1/inline.js"></script>
 
     <!-- Configuration and Scripts -->
+    <script src="../js/config.js"></script>
     <script src="../js/supabase-config.js"></script>
+    <script src="../js/auth-check.js"></script>
     <script src="../js/dashboard.js"></script>
     <script src="../js/chatbot.js"></script>
     <script>
       // Auth check on page load
+      let currentUser = null;
+      
       document.addEventListener("DOMContentLoaded", async () => {
         // 1. Maintenance Check (First thing!)
         await checkMaintenanceMode();
 
-        // 2. Auth Check
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) {
-          window.location.href = "../auth.html";
-          return;
-        }
+        // 2. Auth Check - properly wait for session restoration
+        currentUser = await waitForAuth();
+        if (!currentUser) return; // Already redirected by waitForAuth
 
         // 3. Load User Data
-        const profile = await getProfile(user.id);
+        const profile = await getProfile(currentUser.id);
         if (profile) {
           document.querySelector(".page-header h1").textContent =
             `Welcome back, ${profile.full_name || profile.username || "User"}!`;
@@ -249,7 +248,7 @@
         }
 
         // 4. Load Wallet Data
-        const wallet = await getWallet(user.id);
+        const wallet = await getWallet(currentUser.id);
         const balanceFormatted = `₦${parseFloat(wallet.balance || 0).toFixed(2)}`;
         document.getElementById("balanceDisplay").textContent =
           balanceFormatted;

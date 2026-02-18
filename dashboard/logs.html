@@ -380,7 +380,9 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/config.js"></script>
     <script src="../js/supabase-config.js"></script>
+    <script src="../js/auth-check.js"></script>
     <script src="../js/dashboard.js"></script>
     <script>
       let currentUser = null;
@@ -390,15 +392,9 @@
         // 1. Maintenance Check
         await checkMaintenanceMode();
 
-        // 2. Auth Check
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) {
-          window.location.href = "../auth.html";
-          return;
-        }
-        currentUser = user;
+        // 2. Auth Check - properly wait for session restoration
+        currentUser = await waitForAuth();
+        if (!currentUser) return; // Already redirected by waitForAuth
 
         // 3. Load UI Data
         await loadLogPrices();

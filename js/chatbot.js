@@ -254,17 +254,28 @@ class ChatBot {
     const chatWidget = document.getElementById("chatWidget");
     const chatClose = document.getElementById("chatClose");
 
-    chatButton.addEventListener("click", () => this.toggleChat());
-    chatClose.addEventListener("click", () => this.closeChat());
+    // Only attach listeners if elements exist
+    if (chatButton) {
+      chatButton.addEventListener("click", () => this.toggleChat());
+    }
+    
+    if (chatClose) {
+      chatClose.addEventListener("click", () => this.closeChat());
+    }
 
     // Send message
     const chatSend = document.getElementById("chatSend");
     const chatInput = document.getElementById("chatInput");
 
-    chatSend.addEventListener("click", () => this.sendMessage());
-    chatInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") this.sendMessage();
-    });
+    if (chatSend) {
+      chatSend.addEventListener("click", () => this.sendMessage());
+    }
+    
+    if (chatInput) {
+      chatInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") this.sendMessage();
+      });
+    }
 
     // Quick replies
     document.querySelectorAll(".quick-reply-btn").forEach((btn) => {
