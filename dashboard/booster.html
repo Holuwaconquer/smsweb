@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -162,42 +162,65 @@
     </nav>
 
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div class="sidebar-section">
-        <a href="index.html" class="sidebar-link">📊 Dashboard</a>
-        <a href="usa-numbers.html" class="sidebar-link">🇺🇸 Buy USA Numbers</a>
-        <a href="all-countries.html" class="sidebar-link"
-          >🌍 International Numbers</a
-        >
-        <a href="logs.html" class="sidebar-link">📝 Buy Logs</a>
-        <a href="booster.html" class="sidebar-link active">📈 Social Booster</a>
-        <a href="inbox.html" class="sidebar-link">📬 SMS Inbox</a>
-        <a href="history.html" class="sidebar-link">📋 History</a>
+        <div class="sidebar-title">Menu</div>
+        <a href="index.html" class="sidebar-link">
+          <span class="sidebar-icon">🏠</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="usa-numbers.html" class="sidebar-link">
+          <span class="sidebar-icon">📱</span>
+          <span>USA Numbers</span>
+        </a>
+        <a href="all-countries.html" class="sidebar-link">
+          <span class="sidebar-icon">🌍</span>
+          <span>All Countries</span>
+        </a>
+        <a href="logs.html" class="sidebar-link">
+          <span class="sidebar-icon">📝</span>
+          <span>Buy Logs</span>
+        </a>
+        <a href="booster.html" class="sidebar-link active">
+          <span class="sidebar-icon">📈</span>
+          <span>Social Booster</span>
+        </a>
+        <a href="inbox.html" class="sidebar-link">
+          <span class="sidebar-icon">📬</span>
+          <span>SMS Inbox</span>
+        </a>
+        <a href="history.html" class="sidebar-link">
+          <span class="sidebar-icon">🕐</span>
+          <span>History</span>
+        </a>
+        <a href="wallet.html" class="sidebar-link">
+          <span class="sidebar-icon">💰</span>
+          <span>Wallet</span>
+        </a>
+        <a href="profile.html" class="sidebar-link">
+          <span class="sidebar-icon">👤</span>
+          <span>Profile</span>
+        </a>
+        <a href="#" class="sidebar-link" id="contactLink">
+          <span class="sidebar-icon">📞</span>
+          <span>Contact Us</span>
+        </a>
       </div>
       <div class="sidebar-section">
-        <a href="wallet.html" class="sidebar-link">💰 Wallet</a>
-        <a href="profile.html" class="sidebar-link">👤 Profile</a>
-      </div>
-      <div class="sidebar-section" id="adminSection" style="display: none">
+        <div class="sidebar-title">Account</div>
         <a
           href="../admin/index.html"
-          class="sidebar-link"
-          style="
-            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
-            color: white;
-            border-radius: 8px;
-          "
-          >⚙️ Admin Panel</a
+          class="sidebar-link admin-link"
+          id="adminSection"
+          style="display: none"
         >
-      </div>
-      <div class="sidebar-section" style="margin-top: auto">
-        <button
-          id="logoutBtn"
-          class="btn btn-danger"
-          style="width: 100%; padding: 12px; cursor: pointer"
-        >
-          🚪 Logout
-        </button>
+          <span class="sidebar-icon">⚙️</span>
+          <span>Admin Panel</span>
+        </a>
+        <a href="#" class="sidebar-link" id="logoutBtn">
+          <span class="sidebar-icon">🚪</span>
+          <span>Log Out</span>
+        </a>
       </div>
     </aside>
 
@@ -393,9 +416,35 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/config.js"></script>
     <script src="../js/supabase-config.js"></script>
+    <script src="../js/notifications.js"></script>
     <script src="../js/auth-check.js"></script>
+    <script src="../js/realtime-manager.js"></script>
     <script src="../js/dashboard.js"></script>
     <script>
+      // Suppress WebSocket and network errors (app works without them)
+      window.addEventListener(
+        "error",
+        (e) => {
+          if (
+            e.message &&
+            (e.message.includes("WebSocket") ||
+              e.message.includes("closed due to suspension"))
+          ) {
+            e.preventDefault();
+          }
+        },
+        true
+      );
+      window.addEventListener("unhandledrejection", (e) => {
+        if (
+          e.reason &&
+          (String(e.reason).includes("WebSocket") ||
+            String(e.reason).includes("closed due to suspension"))
+        ) {
+          e.preventDefault();
+        }
+      });
+
       let currentUser = null;
       let dynamicBoostPrices = {};
 
@@ -412,14 +461,14 @@
         await loadBalance();
 
         // Check if user is admin
-        const isAdmin = await isUserAdmin(user.id);
+        const isAdmin = await isUserAdmin(currentUser.id);
         if (isAdmin) {
           document.getElementById("adminSection").style.display = "block";
         }
 
         // Hamburger menu toggle
         const hamburger = document.getElementById("hamburger");
-        const sidebar = document.querySelector(".sidebar");
+        const sidebar = document.getElementById("sidebar");
         if (hamburger && sidebar) {
           function toggleSidebar(e) {
             if (e) {
@@ -443,7 +492,7 @@
                 sidebar.classList.remove("active");
               }
             },
-            true,
+            true
           );
         }
 
@@ -451,10 +500,13 @@
         document
           .getElementById("logoutBtn")
           .addEventListener("click", async () => {
-            if (confirm("Are you sure?")) {
+            ConfirmationManager.show("Are you sure?", async () => {
               await supabase.auth.signOut();
-              window.location.href = "../auth.html";
-            }
+              NotificationManager.success("Logged out successfully!");
+              setTimeout(() => {
+                window.location.href = "../auth.html";
+              }, 1000);
+            });
           });
       });
 
@@ -474,7 +526,7 @@
 
           // Initial price update for all cards
           ["instagram", "tiktok", "youtube", "twitter"].forEach((p) =>
-            updatePrice(p),
+            updatePrice(p)
           );
         } catch (error) {
           console.error("Error loading boost prices:", error);
@@ -485,10 +537,10 @@
       function updatePrice(platform) {
         const platformKey = platform === "instagram" ? "instagram" : platform; // normalization
         const serviceNode = document.getElementById(
-          `${platform === "youtube" ? "yt" : platform}-service`,
+          `${platform === "youtube" ? "yt" : platform}-service`
         );
         const quantityNode = document.getElementById(
-          `${platform === "youtube" ? "yt" : platform}-quantity`,
+          `${platform === "youtube" ? "yt" : platform}-quantity`
         );
 
         if (!serviceNode || !quantityNode) return;
@@ -504,16 +556,16 @@
         const totalPrice = basePrice * quantity;
 
         document.getElementById(
-          `${platform === "youtube" ? "youtube" : platform}-price`,
+          `${platform === "youtube" ? "youtube" : platform}-price`
         ).textContent = `₦${totalPrice.toLocaleString()}`;
       }
 
       async function boost(platform) {
         const serviceNode = document.getElementById(
-          `${platform === "youtube" ? "yt" : platform}-service`,
+          `${platform === "youtube" ? "yt" : platform}-service`
         );
         const quantityNode = document.getElementById(
-          `${platform === "youtube" ? "yt" : platform}-quantity`,
+          `${platform === "youtube" ? "yt" : platform}-quantity`
         );
         const service = serviceNode.value;
         const quantity = parseInt(quantityNode.value) || 1;
@@ -527,60 +579,60 @@
         const wallet = await getWallet(currentUser.id);
         if (wallet.balance < totalPrice) {
           showWarning(
-            `Insufficient balance. (Needed: ₦${totalPrice}, Have: ₦${wallet.balance})`,
+            `Insufficient balance. (Needed: ₦${totalPrice}, Have: ₦${wallet.balance})`
           );
           return;
         }
 
-        if (
-          !confirm(
-            `Confirm boost for ${platform} ${service} (Qty: ${quantity}) for ₦${totalPrice}?`,
-          )
-        )
-          return;
+        ConfirmationManager.show(
+          `Confirm boost for ${platform} ${service} (Qty: ${quantity}) for ₦${totalPrice}?`,
+          async () => {
+            try {
+              await updateWallet(currentUser.id, wallet.balance - totalPrice);
+              await createTransaction(
+                currentUser.id,
+                "debit",
+                totalPrice,
+                `Social Boost: ${platform} ${service} (x${quantity})`,
+                "social_boost"
+              );
 
-        try {
-          await updateWallet(currentUser.id, wallet.balance - totalPrice);
-          await createTransaction(
-            currentUser.id,
-            "debit",
-            totalPrice,
-            `Social Boost: ${platform} ${service} (x${quantity})`,
-            "social_boost",
-          );
+              await addSocialBoost(
+                currentUser.id,
+                platform,
+                service,
+                "N/A", // profile link not in simplified UI
+                "N/A", // target url
+                quantity,
+                totalPrice
+              );
 
-          await addSocialBoost(
-            currentUser.id,
-            platform,
-            service,
-            "N/A", // profile link not in simplified UI
-            "N/A", // target url
-            quantity,
-            totalPrice,
-          );
+              await logUserActivity(
+                currentUser.id,
+                "purchase",
+                `Purchased social boost: ${platform} ${service}`
+              );
 
-          await logUserActivity(
-            currentUser.id,
-            "purchase",
-            `Purchased social boost: ${platform} ${service}`,
-          );
-
-          showSuccess(
-            `✅ Boost Request Submitted!\n\nPlatform: ${platform.toUpperCase()}\nService: ${service}\nQuantity: ${quantity}\n\nYour boost will start shortly!`,
-          );
-          await loadBalance();
-        } catch (error) {
-          console.error("Boost error:", error);
-          showError("Failed to submit boost: " + error.message);
-        }
+              showSuccess(
+                `✅ Boost Request Submitted!\n\nPlatform: ${platform.toUpperCase()}\nService: ${service}\nQuantity: ${quantity}\n\nYour boost will start shortly!`
+              );
+              await loadBalance();
+            } catch (error) {
+              console.error("Boost error:", error);
+              showError("Failed to submit boost: " + error.message);
+            }
+          }
+        );
+        return;
       }
 
       async function loadBalance() {
         try {
           const wallet = await getWallet(currentUser.id);
           const balanceFormatted = parseFloat(wallet.balance || 0).toFixed(2);
-          document.getElementById("balanceDisplay").textContent =
-            `₦${balanceFormatted}`;
+          document.getElementById(
+            "balanceDisplay"
+          ).textContent = `₦${balanceFormatted}`;
           if (wallet.balance < 100) {
             document.getElementById("balanceWarning").style.display = "block";
             document.getElementById("balanceWarning").textContent =
@@ -594,13 +646,13 @@
       }
 
       function showSuccess(msg) {
-        alert("✓ " + msg);
+        NotificationManager.success(msg);
       }
       function showError(msg) {
-        alert("✗ " + msg);
+        NotificationManager.error(msg);
       }
       function showWarning(msg) {
-        alert("⚠️ " + msg);
+        NotificationManager.warning(msg);
       }
     </script>
   </body>

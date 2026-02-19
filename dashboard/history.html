@@ -218,42 +218,65 @@
     </nav>
 
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div class="sidebar-section">
-        <a href="index.html" class="sidebar-link">📊 Dashboard</a>
-        <a href="usa-numbers.html" class="sidebar-link">🇺🇸 Buy USA Numbers</a>
-        <a href="all-countries.html" class="sidebar-link"
-          >🌍 International Numbers</a
-        >
-        <a href="logs.html" class="sidebar-link">📝 Buy Logs</a>
-        <a href="booster.html" class="sidebar-link">📈 Social Booster</a>
-        <a href="inbox.html" class="sidebar-link">📬 SMS Inbox</a>
-        <a href="history.html" class="sidebar-link active">📋 History</a>
+        <div class="sidebar-title">Menu</div>
+        <a href="index.html" class="sidebar-link">
+          <span class="sidebar-icon">🏠</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="usa-numbers.html" class="sidebar-link">
+          <span class="sidebar-icon">📱</span>
+          <span>USA Numbers</span>
+        </a>
+        <a href="all-countries.html" class="sidebar-link">
+          <span class="sidebar-icon">🌍</span>
+          <span>All Countries</span>
+        </a>
+        <a href="logs.html" class="sidebar-link">
+          <span class="sidebar-icon">📝</span>
+          <span>Buy Logs</span>
+        </a>
+        <a href="booster.html" class="sidebar-link">
+          <span class="sidebar-icon">📈</span>
+          <span>Social Booster</span>
+        </a>
+        <a href="inbox.html" class="sidebar-link">
+          <span class="sidebar-icon">📬</span>
+          <span>SMS Inbox</span>
+        </a>
+        <a href="history.html" class="sidebar-link active">
+          <span class="sidebar-icon">🕐</span>
+          <span>History</span>
+        </a>
+        <a href="wallet.html" class="sidebar-link">
+          <span class="sidebar-icon">💰</span>
+          <span>Wallet</span>
+        </a>
+        <a href="profile.html" class="sidebar-link">
+          <span class="sidebar-icon">👤</span>
+          <span>Profile</span>
+        </a>
+        <a href="#" class="sidebar-link" id="contactLink">
+          <span class="sidebar-icon">📞</span>
+          <span>Contact Us</span>
+        </a>
       </div>
       <div class="sidebar-section">
-        <a href="wallet.html" class="sidebar-link">💰 Wallet</a>
-        <a href="profile.html" class="sidebar-link">👤 Profile</a>
-      </div>
-      <div class="sidebar-section" id="adminSection" style="display: none">
+        <div class="sidebar-title">Account</div>
         <a
           href="../admin/index.html"
-          class="sidebar-link"
-          style="
-            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
-            color: white;
-            border-radius: 8px;
-          "
-          >⚙️ Admin Panel</a
+          class="sidebar-link admin-link"
+          id="adminSection"
+          style="display: none"
         >
-      </div>
-      <div class="sidebar-section" style="margin-top: auto">
-        <button
-          id="logoutBtn"
-          class="btn btn-danger"
-          style="width: 100%; padding: 12px; cursor: pointer"
-        >
-          🚪 Logout
-        </button>
+          <span class="sidebar-icon">⚙️</span>
+          <span>Admin Panel</span>
+        </a>
+        <a href="#" class="sidebar-link" id="logoutBtn">
+          <span class="sidebar-icon">🚪</span>
+          <span>Log Out</span>
+        </a>
       </div>
     </aside>
 
@@ -364,8 +387,34 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/config.js"></script>
     <script src="../js/supabase-config.js"></script>
+    <script src="../js/notifications.js"></script>
+    <script src="../js/realtime-manager.js"></script>
     <script src="../js/dashboard.js"></script>
     <script>
+      // Suppress WebSocket and network errors (app works without them)
+      window.addEventListener(
+        "error",
+        (e) => {
+          if (
+            e.message &&
+            (e.message.includes("WebSocket") ||
+              e.message.includes("closed due to suspension"))
+          ) {
+            e.preventDefault();
+          }
+        },
+        true
+      );
+      window.addEventListener("unhandledrejection", (e) => {
+        if (
+          e.reason &&
+          (String(e.reason).includes("WebSocket") ||
+            String(e.reason).includes("closed due to suspension"))
+        ) {
+          e.preventDefault();
+        }
+      });
+
       let currentUser = null;
       let allTransactions = [];
       let currentPage = 1;
@@ -382,14 +431,14 @@
         loadTransactions();
 
         // Check if user is admin and show admin button
-        const isAdmin = await isUserAdmin(user.id);
+        const isAdmin = await isUserAdmin(currentUser.id);
         if (isAdmin) {
           document.getElementById("adminSection").style.display = "block";
         }
 
         // Hamburger menu toggle
         const hamburger = document.getElementById("hamburger");
-        const sidebar = document.querySelector(".sidebar");
+        const sidebar = document.getElementById("sidebar");
 
         if (hamburger && sidebar) {
           // Toggle sidebar on hamburger click
@@ -442,9 +491,12 @@
             e.preventDefault();
             const success = await signOut();
             if (success) {
-              window.location.href = "../auth.html";
+              NotificationManager.success("Logged out successfully!");
+              setTimeout(() => {
+                window.location.href = "../auth.html";
+              }, 1000);
             } else {
-              alert("Logout failed. Please try again.");
+              NotificationManager.error("Logout failed. Please try again.");
             }
           });
         }
@@ -574,7 +626,7 @@
 
       function exportCSV() {
         if (allTransactions.length === 0) {
-          alert("No transactions to export");
+          NotificationManager.warning("No transactions to export");
           return;
         }
 

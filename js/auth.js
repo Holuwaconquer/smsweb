@@ -7,8 +7,8 @@ function checkAuthSystem() {
   // Check if Supabase is loaded
   if (typeof supabase === "undefined") {
     console.error("Supabase is not loaded!");
-    alert(
-      "Error: Supabase library failed to load. Please check your internet connection.",
+    NotificationManager.error(
+      "Error: Supabase library failed to load. Please check your internet connection."
     );
     return false;
   }
@@ -16,8 +16,8 @@ function checkAuthSystem() {
   // Check if Auth object is available (check global window object)
   if (typeof window.Auth === "undefined") {
     console.error("Auth object is not available!");
-    alert(
-      "Error: Authentication system failed to initialize. Please refresh the page.",
+    NotificationManager.error(
+      "Error: Authentication system failed to initialize. Please refresh the page."
     );
     return false;
   }
@@ -129,10 +129,12 @@ if (loginForm) {
     signInBtn.textContent = "Sign In";
 
     if (result.success) {
-      alert("Login successful! Welcome back! 🎉");
-      window.location.href = "dashboard/index.html";
+      NotificationManager.success("Login successful! Welcome back! 🎉");
+      setTimeout(() => {
+        window.location.href = "dashboard/index.html";
+      }, 1500);
     } else {
-      alert("Error: " + result.error);
+      NotificationManager.error("Error: " + result.error);
     }
   });
 }
@@ -248,7 +250,7 @@ if (signupForm) {
       showError(
         "username",
         "usernameError",
-        "Username must be at least 3 characters",
+        "Username must be at least 3 characters"
       );
       isValid = false;
     }
@@ -257,7 +259,7 @@ if (signupForm) {
       showError(
         "signupEmail",
         "emailError",
-        "Please enter a valid email address",
+        "Please enter a valid email address"
       );
       isValid = false;
     }
@@ -266,7 +268,7 @@ if (signupForm) {
       showError(
         "signupPassword",
         "passwordError",
-        "Password must be at least 6 characters",
+        "Password must be at least 6 characters"
       );
       isValid = false;
     }
@@ -298,7 +300,7 @@ if (signupForm) {
         const result = await window.Auth.signUp(
           emailVal,
           passwordVal,
-          usernameVal,
+          usernameVal
         );
         console.log("Auth.signUp result:", result);
 
@@ -342,13 +344,13 @@ if (signupForm) {
           }
         } else {
           console.error("Signup failed:", result.error);
-          alert("Error: " + result.error);
+          NotificationManager.error("Signup failed: " + result.error);
         }
       } catch (error) {
         console.error("Exception during signup:", error);
         signupBtn.classList.remove("loading");
         signupBtn.textContent = "Create Account";
-        alert("Unexpected error: " + error.message);
+        NotificationManager.error("Unexpected error: " + error.message);
       }
     }
   });

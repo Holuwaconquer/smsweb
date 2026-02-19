@@ -18,12 +18,12 @@
             <span></span>
             <span></span>
           </button>
-          <button
+          <!-- <button
             class="back-button"
             onclick="window.location.href = '../dashboard/index.html'"
           >
             <span>←</span>
-          </button>
+          </button> -->
           <div class="logo">
             <div class="logo-icon">F</div>
             <span>Femzy Admin</span>
@@ -82,6 +82,10 @@
         <a href="pricing.html" class="sidebar-link">
           <span class="sidebar-icon">💸</span>
           <span>Price Control</span>
+        </a>
+        <a href="social-media.html" class="sidebar-link">
+          <span class="sidebar-icon">🔗</span>
+          <span>Social Media Links</span>
         </a>
         <a href="#" class="sidebar-link" onclick="showSection('logs')">
           <span class="sidebar-icon">📜</span>
@@ -523,11 +527,39 @@
       </svg>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2\"></script>
-    <script src=\"../js/config.js\"></script>
-    <script src=\"../js/supabase-config.js\"></script>
-    <script src=\"../js/dashboard.js\"></script>
-    <script src=\"../js/admin.js\"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/notifications.js"></script>
+    <script src="../js/realtime-manager.js"></script>
+    <script src="../js/auth-check.js"></script>
+    <script src="../js/dashboard.js"></script>
+    <script src="../js/admin.js"></script>
     <script src="../js/chatbot.js"></script>
+    <script>
+      // Initialize admin realtime subscriptions
+      document.addEventListener("DOMContentLoaded", async () => {
+        const isAdmin = await new Promise((resolve) => {
+          supabase.auth.onAuthStateChange((event, session) => {
+            if (session?.user) {
+              supabase
+                .from("profiles")
+                .select("is_admin")
+                .eq("id", session.user.id)
+                .single()
+                .then(({ data }) => {
+                  resolve(data?.is_admin);
+                });
+            } else {
+              resolve(false);
+            }
+          });
+        });
+
+        if (isAdmin && window.initializeAdminRealtime) {
+          initializeAdminRealtime();
+        }
+      });
+    </script>
   </body>
 </html>

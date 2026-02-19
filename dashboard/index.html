@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -49,6 +49,18 @@
           <span class="sidebar-icon">🌍</span>
           <span>All Countries</span>
         </a>
+        <a href="logs.html" class="sidebar-link">
+          <span class="sidebar-icon">📝</span>
+          <span>Buy Logs</span>
+        </a>
+        <a href="booster.html" class="sidebar-link">
+          <span class="sidebar-icon">📈</span>
+          <span>Social Booster</span>
+        </a>
+        <a href="inbox.html" class="sidebar-link">
+          <span class="sidebar-icon">📬</span>
+          <span>SMS Inbox</span>
+        </a>
         <a href="history.html" class="sidebar-link">
           <span class="sidebar-icon">🕐</span>
           <span>History</span>
@@ -61,7 +73,7 @@
           <span class="sidebar-icon">👤</span>
           <span>Profile</span>
         </a>
-        <a href="#" class="sidebar-link" id="contactLink">
+        <a href="contact.html" class="sidebar-link">
           <span class="sidebar-icon">📞</span>
           <span>Contact Us</span>
         </a>
@@ -214,13 +226,38 @@
     <!-- Configuration and Scripts -->
     <script src="../js/config.js"></script>
     <script src="../js/supabase-config.js"></script>
+    <script src="../js/notifications.js"></script>
+    <script src="../js/realtime-manager.js"></script>
     <script src="../js/auth-check.js"></script>
     <script src="../js/dashboard.js"></script>
     <script src="../js/chatbot.js"></script>
     <script>
+      // Suppress WebSocket and network errors (app works without them)
+      window.addEventListener(
+        "error",
+        (e) => {
+          if (
+            e.message &&
+            (e.message.includes("WebSocket") ||
+              e.message.includes("closed due to suspension"))
+          ) {
+            e.preventDefault();
+          }
+        },
+        true
+      );
+      window.addEventListener("unhandledrejection", (e) => {
+        if (
+          e.reason &&
+          (String(e.reason).includes("WebSocket") ||
+            String(e.reason).includes("closed due to suspension"))
+        ) {
+          e.preventDefault();
+        }
+      });
       // Auth check on page load
       let currentUser = null;
-      
+
       document.addEventListener("DOMContentLoaded", async () => {
         // 1. Maintenance Check (First thing!)
         await checkMaintenanceMode();
@@ -232,8 +269,11 @@
         // 3. Load User Data
         const profile = await getProfile(currentUser.id);
         if (profile) {
-          document.querySelector(".page-header h1").textContent =
-            `Welcome back, ${profile.full_name || profile.username || "User"}!`;
+          document.querySelector(
+            ".page-header h1"
+          ).textContent = `Welcome back, ${
+            profile.full_name || profile.username || "User"
+          }!`;
 
           // Show admin link if admin
           if (profile.is_admin) {
@@ -249,16 +289,20 @@
 
         // 4. Load Wallet Data
         const wallet = await getWallet(currentUser.id);
-        const balanceFormatted = `₦${parseFloat(wallet.balance || 0).toFixed(2)}`;
+        const balanceFormatted = `₦${parseFloat(wallet.balance || 0).toFixed(
+          2
+        )}`;
         document.getElementById("balanceDisplay").textContent =
           balanceFormatted;
         document.getElementById("statsBalance").textContent = balanceFormatted;
 
         const spentVal = document.querySelector(
-          ".stat-card:nth-child(3) .stat-value",
+          ".stat-card:nth-child(3) .stat-value"
         );
         if (spentVal)
-          spentVal.textContent = `₦${parseFloat(wallet.total_spent || 0).toFixed(0)}`;
+          spentVal.textContent = `₦${parseFloat(
+            wallet.total_spent || 0
+          ).toFixed(0)}`;
 
         // 5. Hamburger menu toggle
         const hamburger = document.getElementById("hamburger");
@@ -294,7 +338,7 @@
                 sidebar.classList.remove("active");
               }
             },
-            true,
+            false
           );
 
           // Close sidebar when clicking a link on mobile
@@ -313,10 +357,16 @@
         if (logoutBtn) {
           logoutBtn.addEventListener("click", async (e) => {
             e.preventDefault();
-            if (confirm("Are you sure you want to log out?")) {
-              await supabase.auth.signOut();
-              window.location.href = "../auth.html";
-            }
+            ConfirmationManager.show(
+              "Are you sure you want to log out?",
+              async () => {
+                await supabase.auth.signOut();
+                NotificationManager.success("Logged out successfully!");
+                setTimeout(() => {
+                  window.location.href = "../auth.html";
+                }, 1000);
+              }
+            );
           });
         }
       });

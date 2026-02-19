@@ -32,12 +32,37 @@
     </nav>
 
     <!-- Sidebar -->
+    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-section">
         <div class="sidebar-title">Menu</div>
         <a href="index.html" class="sidebar-link">
           <span class="sidebar-icon">🏠</span>
           <span>Dashboard</span>
+        </a>
+        <a href="usa-numbers.html" class="sidebar-link">
+          <span class="sidebar-icon">📱</span>
+          <span>USA Numbers</span>
+        </a>
+        <a href="all-countries.html" class="sidebar-link">
+          <span class="sidebar-icon">🌍</span>
+          <span>All Countries</span>
+        </a>
+        <a href="logs.html" class="sidebar-link">
+          <span class="sidebar-icon">📝</span>
+          <span>Buy Logs</span>
+        </a>
+        <a href="booster.html" class="sidebar-link">
+          <span class="sidebar-icon">📈</span>
+          <span>Social Booster</span>
+        </a>
+        <a href="inbox.html" class="sidebar-link">
+          <span class="sidebar-icon">📬</span>
+          <span>SMS Inbox</span>
+        </a>
+        <a href="history.html" class="sidebar-link">
+          <span class="sidebar-icon">🕐</span>
+          <span>History</span>
         </a>
         <a href="wallet.html" class="sidebar-link active">
           <span class="sidebar-icon">💰</span>
@@ -54,6 +79,15 @@
       </div>
       <div class="sidebar-section">
         <div class="sidebar-title">Account</div>
+        <a
+          href="../admin/index.html"
+          class="sidebar-link admin-link"
+          id="adminSection"
+          style="display: none"
+        >
+          <span class="sidebar-icon">⚙️</span>
+          <span>Admin Panel</span>
+        </a>
         <a href="#" class="sidebar-link" id="logoutBtn">
           <span class="sidebar-icon">🚪</span>
           <span>Log Out</span>
@@ -226,25 +260,27 @@
           text-align: center;
         "
       >
-        <h2 style="margin-bottom: 20px; margin-top: 0">💳 Payment Processing</h2>
-        <p id="paymentStatusText" style="margin-bottom: 20px; color: #666;">
+        <h2 style="margin-bottom: 20px; margin-top: 0">
+          💳 Payment Processing
+        </h2>
+        <p id="paymentStatusText" style="margin-bottom: 20px; color: #666">
           Your payment is being processed. This may take a few moments...
         </p>
-        <div id="paymentStatusSpinner" style="margin: 20px 0;">
-          ⏳
-        </div>
-        <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
-          <button 
-            class="btn btn-primary" 
-            id="checkPaymentBtn" 
-            style="flex: 1; min-width: 150px;"
+        <div id="paymentStatusSpinner" style="margin: 20px 0">⏳</div>
+        <div
+          style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap"
+        >
+          <button
+            class="btn btn-primary"
+            id="checkPaymentBtn"
+            style="flex: 1; min-width: 150px"
           >
             🔍 Check Payment Status
           </button>
-          <button 
-            class="btn btn-secondary" 
-            id="closePaymentBtn" 
-            style="flex: 1; min-width: 150px;"
+          <button
+            class="btn btn-secondary"
+            id="closePaymentBtn"
+            style="flex: 1; min-width: 150px"
           >
             Close
           </button>
@@ -261,16 +297,52 @@
     <!-- Scripts -->
     <script src="../js/config.js"></script>
     <script src="../js/supabase-config.js"></script>
+    <script src="../js/notifications.js"></script>
     <script src="../js/paystack-config.js"></script>
     <script src="../js/payment.js"></script>
+    <script src="../js/realtime-manager.js"></script>
     <script src="../js/dashboard.js"></script>
+    <script src="../js/auth-check.js"></script>
     <script>
+      // Suppress WebSocket and network errors (app works without them)
+      window.addEventListener(
+        "error",
+        (e) => {
+          if (
+            e.message &&
+            (e.message.includes("WebSocket") ||
+              e.message.includes("closed due to suspension"))
+          ) {
+            e.preventDefault();
+          }
+        },
+        true
+      );
+      window.addEventListener("unhandledrejection", (e) => {
+        if (
+          e.reason &&
+          (String(e.reason).includes("WebSocket") ||
+            String(e.reason).includes("closed due to suspension"))
+        ) {
+          e.preventDefault();
+        }
+      });
+
       // Wallet specific functionality
       let currentUser = null;
 
       document.addEventListener("DOMContentLoaded", async () => {
-        await checkAuth();
-        
+        // 1. Maintenance Check
+        await checkMaintenanceMode();
+
+        // 2. Auth Check - properly wait for session restoration
+        currentUser = await waitForAuth();
+        if (!currentUser) return; // Already redirected by waitForAuth
+
+        // 3. Load wallet data
+        await loadWalletData();
+        initWalletUI();
+
         // Hamburger menu toggle
         const hamburger = document.getElementById("hamburger");
         const sidebar = document.getElementById("sidebar");
@@ -318,35 +390,52 @@
             });
           });
         }
+
+        // Logout
+        document
+          .getElementById("logoutBtn")
+          .addEventListener("click", async () => {
+            ConfirmationManager.show("Are you sure?", async () => {
+              await supabase.auth.signOut();
+              NotificationManager.success("Logged out successfully!");
+              setTimeout(() => {
+                window.location.href = "../auth.html";
+              }, 1000);
+            });
+          });
       });
 
       async function checkAuth() {
         return new Promise((resolve) => {
           try {
             // Use onAuthStateChange to properly wait for session restoration
-            const { data: { subscription } } = supabase.auth.onAuthStateChange(
-              async (event, session) => {
-                console.log("Auth state changed:", event, session?.user?.id || "no user");
-                
-                if (session && session.user) {
-                  currentUser = session.user;
-                  console.log("User authenticated:", currentUser.email);
-                  
-                  // Load wallet data after auth is confirmed
-                  await loadWalletData();
-                  initWalletUI();
-                  
-                  // Cleanup subscription
-                  subscription?.unsubscribe();
-                  resolve(true);
-                } else if (event === "INITIAL_SESSION") {
-                  // No user on initial session check, redirect to auth
-                  console.log("No authenticated user found");
-                  window.location.href = "../auth.html";
-                  resolve(false);
-                }
+            const {
+              data: { subscription },
+            } = supabase.auth.onAuthStateChange(async (event, session) => {
+              console.log(
+                "Auth state changed:",
+                event,
+                session?.user?.id || "no user"
+              );
+
+              if (session && session.user) {
+                currentUser = session.user;
+                console.log("User authenticated:", currentUser.email);
+
+                // Load wallet data after auth is confirmed
+                await loadWalletData();
+                initWalletUI();
+
+                // Cleanup subscription
+                subscription?.unsubscribe();
+                resolve(true);
+              } else if (event === "INITIAL_SESSION") {
+                // No user on initial session check, redirect to auth
+                console.log("No authenticated user found");
+                window.location.href = "../auth.html";
+                resolve(false);
               }
-            );
+            });
           } catch (error) {
             console.error("Auth check error:", error);
             window.location.href = "../auth.html";
@@ -378,16 +467,17 @@
               .from("wallets")
               .insert({
                 user_id: currentUser.id,
-                balance: 0.00,
-                total_added: 0.00,
-                total_spent: 0.00,
+                balance: 0.0,
+                total_added: 0.0,
+                total_spent: 0.0,
               })
               .select()
               .single();
 
             if (createError) {
               console.error("Error creating wallet:", createError);
-              document.getElementById("walletBalance").textContent = "❌ Error loading wallet";
+              document.getElementById("walletBalance").textContent =
+                "❌ Error loading wallet";
               return;
             }
 
@@ -395,7 +485,8 @@
             console.log("New wallet created:", wallet);
           } else if (error) {
             console.error("Error loading wallet:", error);
-            document.getElementById("walletBalance").textContent = "❌ Error loading wallet";
+            document.getElementById("walletBalance").textContent =
+              "❌ Error loading wallet";
             return;
           }
 
@@ -405,13 +496,22 @@
             const totalAdded = parseFloat(wallet.total_added || 0).toFixed(2);
             const totalSpent = parseFloat(wallet.total_spent || 0).toFixed(2);
 
-            document.getElementById("walletBalance").textContent = `₦${balance}`;
-            document.getElementById("balanceDisplay").textContent = `₦${balance}`;
-            document.getElementById("totalAdded").textContent = `₦${totalAdded}`;
-            document.getElementById("totalSpent").textContent = `₦${totalSpent}`;
+            document.getElementById(
+              "walletBalance"
+            ).textContent = `₦${balance}`;
+            document.getElementById(
+              "balanceDisplay"
+            ).textContent = `₦${balance}`;
+            document.getElementById(
+              "totalAdded"
+            ).textContent = `₦${totalAdded}`;
+            document.getElementById(
+              "totalSpent"
+            ).textContent = `₦${totalSpent}`;
           } else {
             console.error("No wallet data returned");
-            document.getElementById("walletBalance").textContent = "❌ No wallet data";
+            document.getElementById("walletBalance").textContent =
+              "❌ No wallet data";
           }
         } catch (error) {
           console.error("Error loading wallet data:", error);
@@ -539,7 +639,7 @@
           const amount = parseInt(document.getElementById("amountInput").value);
 
           if (!amount || amount < 100) {
-            alert("Minimum amount is ₦100");
+            NotificationManager.warning("Minimum amount is ₦100");
             return;
           }
 
@@ -549,13 +649,18 @@
             console.log("=== PAYMENT PROCESS STARTED ===");
             payNowBtn.disabled = true;
             payNowBtn.textContent = "Processing...";
-            
+
             // Use currentUser which is already authenticated
             if (!currentUser) {
               throw new Error("User not authenticated. Please sign in again.");
             }
 
-            console.log("✓ Step 1: Current user verified:", currentUser.email, "Amount:", amount);
+            console.log(
+              "✓ Step 1: Current user verified:",
+              currentUser.email,
+              "Amount:",
+              amount
+            );
 
             const { data: profile } = await supabase
               .from("profiles")
@@ -571,40 +676,46 @@
 
             // Initialize Paystack payment
             const paystack = new PaystackPayment();
-            console.log("✓ Step 3: Paystack initialized, opening payment modal...");
-            
+            console.log(
+              "✓ Step 3: Paystack initialized, opening payment modal..."
+            );
+
             paymentStarted = true;
-            
+
             // Store the reference for manual checking
-            const tempRef = "BDSMS_" + Math.random().toString(36).substring(2, 15) + Date.now();
+            const tempRef =
+              "BDSMS_" +
+              Math.random().toString(36).substring(2, 15) +
+              Date.now();
             console.log("Payment reference:", tempRef);
             console.log("Starting payment verification process...");
-            
+
             // Close the Add Funds modal and show payment status modal
             modal.style.display = "none";
-            const paymentStatusModal = document.getElementById("paymentStatusModal");
+            const paymentStatusModal =
+              document.getElementById("paymentStatusModal");
             paymentStatusModal.style.display = "flex";
             paymentStatusModal.style.flexDirection = "column";
             paymentStatusModal.style.alignItems = "center";
             paymentStatusModal.style.justifyContent = "center";
-            
+
             // Add check payment handler
             const checkPaymentBtn = document.getElementById("checkPaymentBtn");
             const closePaymentBtn = document.getElementById("closePaymentBtn");
-            
+
             // Remove old listeners
             checkPaymentBtn.replaceWith(checkPaymentBtn.cloneNode(true));
             closePaymentBtn.replaceWith(closePaymentBtn.cloneNode(true));
-            
+
             // Re-query after replacement
             const newCheckBtn = document.getElementById("checkPaymentBtn");
             const newCloseBtn = document.getElementById("closePaymentBtn");
-            
+
             newCheckBtn.addEventListener("click", async () => {
               console.log("User clicked 'Check Payment Status'");
               newCheckBtn.disabled = true;
               newCheckBtn.textContent = "🔄 Checking...";
-              
+
               try {
                 // Get the actual payment reference from database
                 const { data: payments } = await supabase
@@ -613,58 +724,72 @@
                   .eq("user_id", currentUser.id)
                   .order("created_at", { ascending: false })
                   .limit(1);
-                  
+
                 if (payments && payments.length > 0) {
                   const payment = payments[0];
-                  console.log("Found payment:", payment.reference, "Status:", payment.status);
-                  
+                  console.log(
+                    "Found payment:",
+                    payment.reference,
+                    "Status:",
+                    payment.status
+                  );
+
                   if (payment.status === "success") {
                     console.log("✅ Payment is successful!");
-                    document.getElementById("paymentStatusText").textContent = "✅ Payment Confirmed! Updating your wallet...";
-                    document.getElementById("paymentStatusSpinner").textContent = "✓";
-                    
+                    document.getElementById("paymentStatusText").textContent =
+                      "✅ Payment Confirmed! Updating your wallet...";
+                    document.getElementById(
+                      "paymentStatusSpinner"
+                    ).textContent = "✓";
+
                     // Close status modal
                     paymentStatusModal.style.display = "none";
-                    
+
                     // Reload wallet
                     await loadWalletData();
-                    alert("✅ Your wallet has been updated!");
+                    NotificationManager.success(
+                      "Your wallet has been updated!"
+                    );
                   } else if (payment.status === "pending") {
                     console.log("Payment still pending...");
-                    document.getElementById("paymentStatusText").textContent = "⏳ Payment still processing. Please wait...";
+                    document.getElementById("paymentStatusText").textContent =
+                      "⏳ Payment still processing. Please wait...";
                     newCheckBtn.disabled = false;
                     newCheckBtn.textContent = "🔍 Check Again";
                   } else if (payment.status === "failed") {
                     console.log("Payment failed");
-                    document.getElementById("paymentStatusText").textContent = "❌ Payment failed. Please try again.";
+                    document.getElementById("paymentStatusText").textContent =
+                      "❌ Payment failed. Please try again.";
                     newCheckBtn.disabled = false;
                     newCheckBtn.textContent = "Try Again";
                   }
                 } else {
                   console.log("No payment found");
-                  document.getElementById("paymentStatusText").textContent = "❌ No payment found. Try again.";
+                  document.getElementById("paymentStatusText").textContent =
+                    "❌ No payment found. Try again.";
                   newCheckBtn.disabled = false;
                   newCheckBtn.textContent = "🔍 Check Again";
                 }
               } catch (error) {
                 console.error("Error checking payment:", error);
-                document.getElementById("paymentStatusText").textContent = "❌ Error checking status";
+                document.getElementById("paymentStatusText").textContent =
+                  "❌ Error checking status";
                 newCheckBtn.disabled = false;
                 newCheckBtn.textContent = "Try Again";
               }
             });
-            
+
             newCloseBtn.addEventListener("click", () => {
               paymentStatusModal.style.display = "none";
               document.body.style.overflow = "auto";
             });
-            
+
             const result = await paystack.initializePayment(
               amount,
               profile.email,
               currentUser.id
             );
-            
+
             console.log("✓ Step 4: Payment completed, result:", result);
 
             if (!result) {
@@ -675,63 +800,68 @@
 
             // Payment was successful - CLOSE MODAL COMPLETELY
             console.log("✓ Step 6: Closing all modals and cleaning up UI...");
-            
+
             // Close payment status modal
             paymentStatusModal.style.display = "none";
-            
+
             // Force close any open Paystack modals/iframes
-            if (typeof forceClosePaystackModal === 'function') {
+            if (typeof forceClosePaystackModal === "function") {
               forceClosePaystackModal();
             }
-            
+
             // Close the modal using proper display property
             modal.style.display = "none";
-            
+
             // Re-enable body scrolling
             document.body.style.overflow = "auto";
-            
+
             // Clear input field
             document.getElementById("amountInput").value = "";
-            
+
             console.log("✓ Step 7: Modal closed successfully");
-            
+
             // Show success message with new balance
-            alert(
-              `✅ Payment Successful!\n\nAmount: ₦${amount.toFixed(2)}\nReference: ${result.reference}\n\nUpdating your wallet...`
+            NotificationManager.success(
+              `Payment Successful!\n\nAmount: ₦${amount.toFixed(
+                2
+              )}\nReference: ${result.reference}\n\nUpdating your wallet...`
             );
-            
-            console.log("✓ Step 8: Success alerts shown, reloading wallet data...");
-            
+
+            console.log(
+              "✓ Step 8: Success notifications shown, reloading wallet data..."
+            );
+
             // Add small delay to ensure database is updated
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+
             // Reload wallet data to show updated balance
             await loadWalletData();
-            
+
             console.log("✓ Step 9: Wallet data reloaded");
-            
-            alert("✅ Your wallet has been updated!");
-            
+
+            NotificationManager.success("Your wallet has been updated!");
+
             console.log("=== PAYMENT PROCESS COMPLETED SUCCESSFULLY ===");
-            
           } catch (error) {
             console.error("❌ PAYMENT ERROR:", error);
             console.error("Error message:", error.message);
             console.error("Error stack:", error.stack);
-            
+
             // Force close any Paystack modals
-            if (typeof forceClosePaystackModal === 'function') {
+            if (typeof forceClosePaystackModal === "function") {
               forceClosePaystackModal();
             }
-            
+
             // Always close modal on error too
             modal.style.display = "none";
             document.body.style.overflow = "auto";
-            
+
             if (paymentStarted) {
-              alert("Payment was initiated but verification failed. Your wallet may still be updated. Check your transaction history.");
+              NotificationManager.error(
+                "Payment was initiated but verification failed. Your wallet may still be updated. Check your transaction history."
+              );
             } else {
-              alert("❌ Payment error: " + error.message + "\n\nPlease check the browser console (F12) for more details.");
+              NotificationManager.error("Payment error: " + error.message);
             }
           } finally {
             payNowBtn.disabled = false;

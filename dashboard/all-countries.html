@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -182,7 +182,7 @@
     </nav>
 
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div class="sidebar-section">
         <a href="index.html" class="sidebar-link">📊 Dashboard</a>
         <a href="usa-numbers.html" class="sidebar-link">🇺🇸 Buy USA Numbers</a>
@@ -280,9 +280,35 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/config.js"></script>
     <script src="../js/supabase-config.js"></script>
+    <script src="../js/notifications.js"></script>
     <script src="../js/auth-check.js"></script>
+    <script src="../js/realtime-manager.js"></script>
     <script src="../js/dashboard.js"></script>
     <script>
+      // Suppress WebSocket and network errors (app works without them)
+      window.addEventListener(
+        "error",
+        (e) => {
+          if (
+            e.message &&
+            (e.message.includes("WebSocket") ||
+              e.message.includes("closed due to suspension"))
+          ) {
+            e.preventDefault();
+          }
+        },
+        true
+      );
+      window.addEventListener("unhandledrejection", (e) => {
+        if (
+          e.reason &&
+          (String(e.reason).includes("WebSocket") ||
+            String(e.reason).includes("closed due to suspension"))
+        ) {
+          e.preventDefault();
+        }
+      });
+
       let currentUser = null;
       let activePrices = {};
 
@@ -300,49 +326,45 @@
         renderCountries();
 
         // Check if user is admin
-        const isAdmin = await isUserAdmin(user.id);
+        const isAdmin = await isUserAdmin(currentUser.id);
         if (isAdmin) {
           document.getElementById("adminSection").style.display = "block";
         }
 
         // Hamburger menu toggle
         const hamburger = document.getElementById("hamburger");
-        const sidebar = document.querySelector(".sidebar");
+        const sidebar = document.getElementById("sidebar");
         if (hamburger && sidebar) {
-          function toggleSidebar(e) {
-            if (e) {
-              e.stopPropagation();
-              e.preventDefault();
-            }
+          hamburger.addEventListener("click", (e) => {
+            e.stopPropagation();
+            e.preventDefault();
             hamburger.classList.toggle("active");
             sidebar.classList.toggle("active");
-          }
-          hamburger.addEventListener("click", toggleSidebar);
-          hamburger.addEventListener("touchstart", toggleSidebar);
-          document.addEventListener(
-            "click",
-            (e) => {
-              if (
-                !hamburger.contains(e.target) &&
-                !sidebar.contains(e.target) &&
-                sidebar.classList.contains("active")
-              ) {
-                hamburger.classList.remove("active");
-                sidebar.classList.remove("active");
-              }
-            },
-            true,
-          );
+          });
+
+          document.addEventListener("click", (e) => {
+            if (
+              !hamburger.contains(e.target) &&
+              !sidebar.contains(e.target) &&
+              sidebar.classList.contains("active")
+            ) {
+              hamburger.classList.remove("active");
+              sidebar.classList.remove("active");
+            }
+          });
         }
 
         // Logout
         document
           .getElementById("logoutBtn")
           .addEventListener("click", async () => {
-            if (confirm("Are you sure?")) {
+            ConfirmationManager.show("Are you sure?", async () => {
               await supabase.auth.signOut();
-              window.location.href = "../auth.html";
-            }
+              NotificationManager.success("Logged out successfully!");
+              setTimeout(() => {
+                window.location.href = "../auth.html";
+              }, 1000);
+            });
           });
       });
 
@@ -386,7 +408,9 @@
                <div class="number-item">
                  <div class="number-info">
                    <span class="number-phone">${name.toUpperCase()}</span>
-                   <span class="number-price">₦${parseFloat(price).toLocaleString()}</span>
+                   <span class="number-price">₦${parseFloat(
+                     price
+                   ).toLocaleString()}</span>
                  </div>
                  <button class="btn-buy" onclick="buyInternationalNumber('${countryId}', '${name}', ${price})">Buy</button>
                </div>
@@ -407,7 +431,7 @@
         const selected = document.getElementById("countryFilter").value;
         if (selected) {
           const filtered = Object.keys(activePrices).filter(
-            (c) => c.toLowerCase() === selected.toLowerCase(),
+            (c) => c.toLowerCase() === selected.toLowerCase()
           );
           renderCountries(filtered);
         } else {
@@ -419,39 +443,37 @@
         const wallet = await getWallet(currentUser.id);
         if (wallet.balance < price) {
           showWarning(
-            `Insufficient balance. (Needed: ₦${price}, Have: ₦${wallet.balance})`,
+            `Insufficient balance. (Needed: ₦${price}, Have: ₦${wallet.balance})`
           );
           return;
         }
 
-        if (
-          !confirm(
-            `Confirm purchase of ${country.toUpperCase()} ${service} number for ₦${price}?`,
-          )
-        )
-          return;
+        ConfirmationManager.show(
+          `Confirm purchase of ${country.toUpperCase()} ${service} number for ₦${price}?`,
+          async () => {
+            showSuccess("Processing through 5sim... please wait.");
 
-        showSuccess("Processing through 5sim... please wait.");
+            try {
+              // Call the real purchase function from js/api-5sim.js
+              const result = await purchaseSMSNumber(
+                currentUser.id,
+                country.toLowerCase(),
+                service,
+                price
+              );
 
-        try {
-          // Call the real purchase function from js/api-5sim.js
-          const result = await purchaseSMSNumber(
-            currentUser.id,
-            country.toLowerCase(),
-            service,
-            price,
-          );
-
-          if (result.success) {
-            showSuccess(`✅ Success! Number: ${result.data.phone_number}`);
-            await loadBalance();
-          } else {
-            throw new Error(result.error);
+              if (result.success) {
+                showSuccess(`✅ Success! Number: ${result.data.phone_number}`);
+                await loadBalance();
+              } else {
+                throw new Error(result.error);
+              }
+            } catch (error) {
+              console.error("Purchase error:", error);
+              showError("Purchase failed: " + error.message);
+            }
           }
-        } catch (error) {
-          console.error("Purchase error:", error);
-          showError("Purchase failed: " + error.message);
-        }
+        );
       }
 
       async function loadBalance() {
@@ -472,13 +494,13 @@
       }
 
       function showSuccess(msg) {
-        alert("✓ " + msg);
+        NotificationManager.success(msg);
       }
       function showError(msg) {
-        alert("✗ " + msg);
+        NotificationManager.error(msg);
       }
       function showWarning(msg) {
-        alert("⚠️ " + msg);
+        NotificationManager.warning(msg);
       }
     </script>
   </body>

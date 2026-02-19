@@ -26,9 +26,15 @@ ON CONFLICT DO NOTHING;
 -- Enable RLS
 ALTER TABLE system_settings ENABLE ROW LEVEL SECURITY;
 
--- Policy: Only admins can view/update settings
+-- Policy: All authenticated users can read system settings
+CREATE POLICY "Users can read system settings" ON system_settings
+    FOR SELECT TO authenticated
+    USING (true);
+
+-- Policy: Only admins can modify system settings
 CREATE POLICY "Admins can manage system settings" ON system_settings
-    FOR ALL USING (
+    FOR UPDATE, DELETE, INSERT
+    USING (
         EXISTS (
             SELECT 1 FROM profiles
             WHERE id = auth.uid() AND is_admin = TRUE

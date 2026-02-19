@@ -160,42 +160,65 @@
     </nav>
 
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div class="sidebar-section">
-        <a href="index.html" class="sidebar-link">📊 Dashboard</a>
-        <a href="usa-numbers.html" class="sidebar-link">🇺🇸 Buy USA Numbers</a>
-        <a href="all-countries.html" class="sidebar-link"
-          >🌍 International Numbers</a
-        >
-        <a href="logs.html" class="sidebar-link active">📝 Buy Logs</a>
-        <a href="booster.html" class="sidebar-link">📈 Social Booster</a>
-        <a href="inbox.html" class="sidebar-link">📬 SMS Inbox</a>
-        <a href="history.html" class="sidebar-link">📋 History</a>
+        <div class="sidebar-title">Menu</div>
+        <a href="index.html" class="sidebar-link">
+          <span class="sidebar-icon">🏠</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="usa-numbers.html" class="sidebar-link">
+          <span class="sidebar-icon">📱</span>
+          <span>USA Numbers</span>
+        </a>
+        <a href="all-countries.html" class="sidebar-link">
+          <span class="sidebar-icon">🌍</span>
+          <span>All Countries</span>
+        </a>
+        <a href="logs.html" class="sidebar-link active">
+          <span class="sidebar-icon">📝</span>
+          <span>Buy Logs</span>
+        </a>
+        <a href="booster.html" class="sidebar-link">
+          <span class="sidebar-icon">📈</span>
+          <span>Social Booster</span>
+        </a>
+        <a href="inbox.html" class="sidebar-link">
+          <span class="sidebar-icon">📬</span>
+          <span>SMS Inbox</span>
+        </a>
+        <a href="history.html" class="sidebar-link">
+          <span class="sidebar-icon">🕐</span>
+          <span>History</span>
+        </a>
+        <a href="wallet.html" class="sidebar-link">
+          <span class="sidebar-icon">💰</span>
+          <span>Wallet</span>
+        </a>
+        <a href="profile.html" class="sidebar-link">
+          <span class="sidebar-icon">👤</span>
+          <span>Profile</span>
+        </a>
+        <a href="#" class="sidebar-link" id="contactLink">
+          <span class="sidebar-icon">📞</span>
+          <span>Contact Us</span>
+        </a>
       </div>
       <div class="sidebar-section">
-        <a href="wallet.html" class="sidebar-link">💰 Wallet</a>
-        <a href="profile.html" class="sidebar-link">👤 Profile</a>
-      </div>
-      <div class="sidebar-section" id="adminSection" style="display: none">
+        <div class="sidebar-title">Account</div>
         <a
           href="../admin/index.html"
-          class="sidebar-link"
-          style="
-            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
-            color: white;
-            border-radius: 8px;
-          "
-          >⚙️ Admin Panel</a
+          class="sidebar-link admin-link"
+          id="adminSection"
+          style="display: none"
         >
-      </div>
-      <div class="sidebar-section" style="margin-top: auto">
-        <button
-          id="logoutBtn"
-          class="btn btn-danger"
-          style="width: 100%; padding: 12px; cursor: pointer"
-        >
-          🚪 Logout
-        </button>
+          <span class="sidebar-icon">⚙️</span>
+          <span>Admin Panel</span>
+        </a>
+        <a href="#" class="sidebar-link" id="logoutBtn">
+          <span class="sidebar-icon">🚪</span>
+          <span>Log Out</span>
+        </a>
       </div>
     </aside>
 
@@ -382,9 +405,35 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/config.js"></script>
     <script src="../js/supabase-config.js"></script>
+    <script src="../js/notifications.js"></script>
     <script src="../js/auth-check.js"></script>
+    <script src="../js/realtime-manager.js"></script>
     <script src="../js/dashboard.js"></script>
     <script>
+      // Suppress WebSocket and network errors (app works without them)
+      window.addEventListener(
+        "error",
+        (e) => {
+          if (
+            e.message &&
+            (e.message.includes("WebSocket") ||
+              e.message.includes("closed due to suspension"))
+          ) {
+            e.preventDefault();
+          }
+        },
+        true
+      );
+      window.addEventListener("unhandledrejection", (e) => {
+        if (
+          e.reason &&
+          (String(e.reason).includes("WebSocket") ||
+            String(e.reason).includes("closed due to suspension"))
+        ) {
+          e.preventDefault();
+        }
+      });
+
       let currentUser = null;
       let logPrices = {};
 
@@ -401,49 +450,56 @@
         await loadBalance();
 
         // Check if user is admin
-        const isAdmin = await isUserAdmin(user.id);
+        const isAdmin = await isUserAdmin(currentUser.id);
         if (isAdmin) {
           document.getElementById("adminSection").style.display = "block";
         }
 
         // Hamburger menu toggle
         const hamburger = document.getElementById("hamburger");
-        const sidebar = document.querySelector(".sidebar");
+        const sidebar = document.getElementById("sidebar");
         if (hamburger && sidebar) {
           function toggleSidebar(e) {
-            if (e) {
-              e.stopPropagation();
-              e.preventDefault();
-            }
+            e.stopPropagation();
+            e.preventDefault();
             hamburger.classList.toggle("active");
             sidebar.classList.toggle("active");
           }
+          // Use only click event to avoid race conditions with touchstart
           hamburger.addEventListener("click", toggleSidebar);
-          hamburger.addEventListener("touchstart", toggleSidebar);
-          document.addEventListener(
-            "click",
-            (e) => {
-              if (
-                !hamburger.contains(e.target) &&
-                !sidebar.contains(e.target) &&
-                sidebar.classList.contains("active")
-              ) {
-                hamburger.classList.remove("active");
-                sidebar.classList.remove("active");
-              }
-            },
-            true
-          );
+
+          // Close sidebar when clicking outside
+          document.addEventListener("click", (e) => {
+            if (
+              sidebar.classList.contains("active") &&
+              !hamburger.contains(e.target) &&
+              !sidebar.contains(e.target)
+            ) {
+              hamburger.classList.remove("active");
+              sidebar.classList.remove("active");
+            }
+          });
+
+          // Close sidebar when clicking on sidebar links
+          sidebar.addEventListener("click", (e) => {
+            if (e.target.tagName === "A" || e.target.closest("a")) {
+              hamburger.classList.remove("active");
+              sidebar.classList.remove("active");
+            }
+          });
         }
 
         // Logout
         document
           .getElementById("logoutBtn")
           .addEventListener("click", async () => {
-            if (confirm("Are you sure?")) {
+            ConfirmationManager.show("Are you sure?", async () => {
               await supabase.auth.signOut();
-              window.location.href = "../auth.html";
-            }
+              NotificationManager.success("Logged out successfully!");
+              setTimeout(() => {
+                window.location.href = "../auth.html";
+              }, 1000);
+            });
           });
       });
 
@@ -490,43 +546,52 @@
           return;
         }
 
-        if (!confirm(`Buy ${service} account for ₦${price}?`)) return;
+        ConfirmationManager.show(
+          `Buy ${service} account for ₦${price}?`,
+          async () => {
+            try {
+              // In a real app, you'd fetch a random account from inventory
+              // For now we simulate providing a fresh log
+              const email = `premium_${service}_${Math.random()
+                .toString(36)
+                .substring(7)}@Femzy.com`;
+              const password = Math.random().toString(36).slice(-10) + "!!";
 
-        try {
-          // In a real app, you'd fetch a random account from inventory
-          // For now we simulate providing a fresh log
-          const email = `premium_${service}_${Math.random()
-            .toString(36)
-            .substring(7)}@Femzy .com`;
-          const password = Math.random().toString(36).slice(-10) + "!!";
+              // Deduct & Transaction
+              await updateWallet(currentUser.id, wallet.balance - price);
+              await createTransaction(
+                currentUser.id,
+                "debit",
+                price,
+                `Purchased ${service} account logs`,
+                "logs_purchase"
+              );
 
-          // Deduct & Transaction
-          await updateWallet(currentUser.id, wallet.balance - price);
-          await createTransaction(
-            currentUser.id,
-            "debit",
-            price,
-            `Purchased ${service} account logs`,
-            "logs_purchase"
-          );
+              // Save to user's accounts
+              await addLogsAccount(
+                currentUser.id,
+                service,
+                email,
+                password,
+                price
+              );
 
-          // Save to user's accounts
-          await addLogsAccount(currentUser.id, service, email, password, price);
+              await logUserActivity(
+                currentUser.id,
+                "purchase",
+                `Purchased ${service} log`
+              );
 
-          await logUserActivity(
-            currentUser.id,
-            "purchase",
-            `Purchased ${service} log`
-          );
-
-          showSuccess(
-            `✅ Account Purchased!\n\nEmail: ${email}\nPassword: ${password}\n\nCredentials saved to your History.`
-          );
-          await loadBalance();
-        } catch (error) {
-          console.error("Purchase error:", error);
-          showError("Purchase failed. Please try again.");
-        }
+              showSuccess(
+                `✅ Account Purchased!\n\nEmail: ${email}\nPassword: ${password}\n\nCredentials saved to your History.`
+              );
+              await loadBalance();
+            } catch (error) {
+              console.error("Purchase error:", error);
+              showError("Purchase failed. Please try again.");
+            }
+          }
+        );
       }
 
       async function loadBalance() {
@@ -547,13 +612,13 @@
       }
 
       function showSuccess(msg) {
-        alert("✓ " + msg);
+        NotificationManager.success(msg);
       }
       function showError(msg) {
-        alert("✗ " + msg);
+        NotificationManager.error(msg);
       }
       function showWarning(msg) {
-        alert("⚠️ " + msg);
+        NotificationManager.warning(msg);
       }
     </script>
   </body>

@@ -4,7 +4,7 @@
 /**
  * Properly check authentication using onAuthStateChange
  * This waits for Supabase to restore the session from storage
- * 
+ *
  * Usage:
  * let currentUser = null;
  * document.addEventListener("DOMContentLoaded", async () => {
@@ -16,32 +16,46 @@ async function waitForAuth() {
   return new Promise((resolve) => {
     try {
       console.log("Starting authentication check...");
-      
+
       // Use onAuthStateChange for proper session restoration
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
-          console.log("Auth state event:", event, "- User:", session?.user?.email || "none");
-          
-          if (session && session.user) {
-            console.log("✅ User authenticated:", session.user.email);
-            
-            // Cleanup listener and resolve with user
-            subscription?.unsubscribe();
-            resolve(session.user);
-          } else if (event === "INITIAL_SESSION") {
-            // No user found on initial check
-            console.log("❌ No authenticated user - redirecting to login");
-            
-            // Cleanup listener
-            subscription?.unsubscribe();
-            
-            // Redirect to auth page
-            window.location.href = "../auth.html";
-            resolve(null);
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(async (event, session) => {
+        console.log(
+          "Auth state event:",
+          event,
+          "- User:",
+          session?.user?.email || "none"
+        );
+
+        if (session && session.user) {
+          console.log("✅ User authenticated:", session.user.email);
+
+          // Initialize realtime subscriptions if function is available
+          if (window.initializeRealtime) {
+            try {
+              initializeRealtime(session.user.id);
+            } catch (error) {
+              console.error("Failed to initialize realtime:", error);
+            }
           }
-          // For other events (SIGNED_OUT, etc), just wait for INITIAL_SESSION to complete
+
+          // Cleanup listener and resolve with user
+          subscription?.unsubscribe();
+          resolve(session.user);
+        } else if (event === "INITIAL_SESSION") {
+          // No user found on initial check
+          console.log("❌ No authenticated user - redirecting to login");
+
+          // Cleanup listener
+          subscription?.unsubscribe();
+
+          // Redirect to auth page
+          window.location.href = "../auth.html";
+          resolve(null);
         }
-      );
+        // For other events (SIGNED_OUT, etc), just wait for INITIAL_SESSION to complete
+      });
     } catch (error) {
       console.error("Authentication check failed:", error);
       window.location.href = "../auth.html";

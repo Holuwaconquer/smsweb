@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Social Media Links - Admin Panel</title>
+    <link rel="stylesheet" href="../css/dashboard.css" />
+    <link rel="stylesheet" href="../css/admin.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+      }
+
+      .admin-header {
+        background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%);
+        padding: 40px;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+      }
+
+      .admin-header h1 {
+        margin: 0;
+        font-size: 32px;
+        font-weight: 800;
+      }
+
+      .admin-header-action {
+        display: flex;
+        gap: 12px;
+      }
+
+      .btn-add-link {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .btn-add-link:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+      }
+
+      .btn-back {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn-back:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+      }
+
+      main {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      .links-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 24px;
+        margin-bottom: 32px;
+      }
+
+      .link-card {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 28px;
+        transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
+
+      .link-card:hover {
+        transform: translateY(-8px);
+        border-color: #00d4aa;
+        box-shadow: 0 16px 32px rgba(0, 212, 170, 0.15);
+      }
+
+      .link-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+
+      .link-platform {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .link-icon {
+        font-size: 32px;
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(
+          135deg,
+          rgba(0, 212, 170, 0.12),
+          rgba(0, 184, 148, 0.12)
+        );
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .link-name {
+        flex: 1;
+      }
+
+      .link-name h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #1a3a3a;
+      }
+
+      .link-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .status-active {
+        background: rgba(76, 175, 80, 0.15);
+        color: #4cb050;
+      }
+
+      .status-inactive {
+        background: rgba(244, 67, 54, 0.15);
+        color: #f44336;
+      }
+
+      .link-url-section {
+        margin-bottom: 20px;
+      }
+
+      .link-url-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #718096;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+      }
+
+      .link-url-input {
+        width: 100%;
+        padding: 12px 14px;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        font-family: "Courier New", monospace;
+      }
+
+      .link-url-input:focus {
+        outline: none;
+        border-color: #00d4aa;
+        box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.1);
+      }
+
+      .link-url-input:disabled {
+        background: #f7fafc;
+        color: #718096;
+      }
+
+      .link-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 2px solid #e8f5f3;
+      }
+
+      .btn-save-link {
+        flex: 1;
+        padding: 12px 16px;
+        background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+      }
+
+      .btn-save-link:hover:not(:disabled) {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 212, 170, 0.4);
+      }
+
+      .btn-save-link:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .btn-toggle-status {
+        padding: 12px 16px;
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+      }
+
+      .btn-toggle-status:hover {
+        border-color: #00d4aa;
+        background: rgba(0, 212, 170, 0.05);
+      }
+
+      .toggle-switch-inline {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .toggle-switch-inline input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .toggle-slider-inline {
+        position: relative;
+        display: inline-block;
+        width: 48px;
+        height: 26px;
+        background: #cbd5e0;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      .toggle-slider-inline::before {
+        content: "";
+        position: absolute;
+        height: 22px;
+        width: 22px;
+        left: 2px;
+        bottom: 2px;
+        background-color: white;
+        border-radius: 50%;
+        transition: 0.3s;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      }
+
+      input:checked + .toggle-slider-inline {
+        background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%);
+      }
+
+      input:checked + .toggle-slider-inline::before {
+        transform: translateX(22px);
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #718096;
+      }
+
+      .empty-state-icon {
+        font-size: 64px;
+        margin-bottom: 20px;
+      }
+
+      .empty-state h2 {
+        color: #1a3a3a;
+        margin-bottom: 8px;
+      }
+
+      .loading-spinner {
+        text-align: center;
+        padding: 40px;
+      }
+
+      .spinner {
+        border: 4px solid #e2e8f0;
+        border-top: 4px solid #00d4aa;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .audit-section {
+        background: white;
+        border-radius: 16px;
+        border: 2px solid #e2e8f0;
+        padding: 32px;
+        margin-top: 40px;
+      }
+
+      .audit-section h2 {
+        margin-top: 0;
+        margin-bottom: 24px;
+        color: #1a3a3a;
+        font-size: 20px;
+        font-weight: 700;
+      }
+
+      .audit-log-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+
+      .audit-log-table th {
+        background: linear-gradient(
+          135deg,
+          rgba(0, 212, 170, 0.08),
+          rgba(0, 184, 148, 0.08)
+        );
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        color: #1a3a3a;
+        border-bottom: 2px solid #e2e8f0;
+      }
+
+      .audit-log-table td {
+        padding: 12px;
+        border-bottom: 1px solid #e8f5f3;
+        color: #718096;
+      }
+
+      .audit-log-table tbody tr:hover {
+        background: rgba(0, 212, 170, 0.03);
+      }
+
+      .action-badge {
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 12px;
+      }
+
+      .action-create {
+        background: rgba(76, 175, 80, 0.15);
+        color: #4cb050;
+      }
+      .action-update {
+        background: rgba(33, 150, 243, 0.15);
+        color: #2196f3;
+      }
+      .action-delete {
+        background: rgba(244, 67, 54, 0.15);
+        color: #f44336;
+      }
+      .action-activate {
+        background: rgba(76, 175, 80, 0.15);
+        color: #4cb050;
+      }
+      .action-deactivate {
+        background: rgba(244, 67, 54, 0.15);
+        color: #f44336;
+      }
+
+      @media (max-width: 768px) {
+        .admin-header {
+          flex-direction: column;
+          gap: 16px;
+          text-align: center;
+        }
+
+        .admin-header-action {
+          width: 100%;
+          justify-content: center;
+        }
+
+        .links-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .audit-section {
+          overflow-x: auto;
+        }
+
+        .audit-log-table {
+          min-width: 500px;
+        }
+      }
+
+      body.dark-theme {
+        background: #0f1419;
+      }
+
+      body.dark-theme .link-card {
+        background: #1a1f26;
+        border-color: #2d3748;
+      }
+
+      body.dark-theme .link-card:hover {
+        border-color: #00d4aa;
+      }
+
+      body.dark-theme .link-url-input {
+        background: #2d3748;
+        border-color: #4a5568;
+        color: #e2e8f0;
+      }
+
+      body.dark-theme .link-url-input:focus {
+        border-color: #00d4aa;
+      }
+
+      body.dark-theme .audit-section {
+        background: #1a1f26;
+        border-color: #2d3748;
+      }
+
+      body.dark-theme .audit-log-table th {
+        background: rgba(0, 212, 170, 0.1);
+        color: #e2e8f0;
+      }
+
+      body.dark-theme .audit-log-table td {
+        color: #cbd5e0;
+        border-bottom-color: #2d3748;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Top Navigation -->
+    <nav
+      class="top-nav"
+      style="background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%)"
+    >
+      <div class="nav-left">
+        <a href="index.html" class="btn-back">
+          <span>←</span>
+          <span>Back to Admin</span>
+        </a>
+        <div class="logo">
+          <div class="logo-icon">F</div>
+          <span>Social Media Links</span>
+        </div>
+      </div>
+      <div class="nav-right">
+        <button class="theme-toggle" id="themeToggle">🌙</button>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+      <!-- Header Section -->
+      <div class="admin-header">
+        <div>
+          <h1>Social Media Links</h1>
+          <p style="margin: 8px 0 0 0; opacity: 0.9">
+            Manage contact channels on the public profile
+          </p>
+        </div>
+        <div class="admin-header-action">
+          <button class="btn-add-link" onclick="refreshLinks()">
+            🔄 Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Links Grid -->
+      <div id="linksContainer" class="links-grid">
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+          <p>Loading social media links...</p>
+        </div>
+      </div>
+
+      <!-- Audit Log Section -->
+      <div class="audit-section" id="auditSection" style="display: none">
+        <h2>📋 Recent Changes</h2>
+        <div id="auditLogContainer"></div>
+      </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/notifications.js"></script>
+    <script src="../js/auth-check.js"></script>
+    <script>
+      let currentUser = null;
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        currentUser = await waitForAuth();
+        if (!currentUser) return;
+
+        // Check if user is admin
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("is_admin")
+          .eq("id", currentUser.id)
+          .single();
+
+        if (!profile?.is_admin) {
+          NotificationManager.error(
+            "❌ You do not have permission to access this page"
+          );
+          setTimeout(() => {
+            window.location.href = "../dashboard/index.html";
+          }, 2000);
+          return;
+        }
+
+        await refreshLinks();
+        initUI();
+      });
+
+      async function refreshLinks() {
+        try {
+          const { data: links, error } = await supabase
+            .from("social_media_links")
+            .select("*")
+            .order("display_order", { ascending: true });
+
+          if (error) throw error;
+
+          renderLinks(links);
+          await loadAuditLog();
+        } catch (error) {
+          NotificationManager.error("❌ Error loading links: " + error.message);
+          console.error(error);
+        }
+      }
+
+      function renderLinks(links) {
+        const container = document.getElementById("linksContainer");
+
+        if (!links || links.length === 0) {
+          container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <div class="empty-state-icon">🔗</div>
+                        <h2>No Social Media Links</h2>
+                        <p>Add your first social media link to get started</p>
+                    </div>
+                `;
+          return;
+        }
+
+        container.innerHTML = links
+          .map(
+            (link) => `
+                <div class="link-card">
+                    <div class="link-header">
+                        <div class="link-platform">
+                            <div class="link-icon">${
+                              link.icon_emoji || "🔗"
+                            }</div>
+                            <div class="link-name">
+                                <h3>${link.platform}</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="link-url-section">
+                        <div class="link-url-label">URL</div>
+                        <input 
+                            type="url" 
+                            class="link-url-input link-url-${link.id}" 
+                            placeholder="https://..." 
+                            value="${link.url || ""}"
+                        />
+                    </div>
+
+                    <div style="margin: 16px 0; padding: 12px; background: rgba(0, 212, 170, 0.08); border-radius: 8px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <label style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 13px; font-weight: 600; color: #1a3a3a;">
+                                    ${link.active ? "✅ Active" : "❌ Inactive"}
+                                </span>
+                            </label>
+                            <label class="toggle-switch-inline">
+                                <input type="checkbox" class="link-toggle-${
+                                  link.id
+                                }" ${link.active ? "checked" : ""}>
+                                <span class="toggle-slider-inline"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="link-actions">
+                        <button 
+                            class="btn-save-link link-save-${link.id}" 
+                            onclick="saveLinkUrl('${link.id}')"
+                        >
+                            💾 Save URL
+                        </button>
+                    </div>
+                </div>
+            `
+          )
+          .join("");
+
+        // Add event listeners for toggles
+        links.forEach((link) => {
+          const toggle = document.querySelector(`.link-toggle-${link.id}`);
+          if (toggle) {
+            toggle.addEventListener("change", () =>
+              toggleLinkStatus(link.id, toggle.checked)
+            );
+          }
+        });
+      }
+
+      async function saveLinkUrl(linkId) {
+        try {
+          const urlInput = document.querySelector(`.link-url-${linkId}`);
+          const url = urlInput.value.trim();
+
+          if (!url && url !== "") {
+            NotificationManager.error("Please enter a URL");
+            return;
+          }
+
+          if (url && !isValidUrl(url)) {
+            NotificationManager.error(
+              "Please enter a valid URL (starting with http:// or https://)"
+            );
+            return;
+          }
+
+          const saveBtn = document.querySelector(`.link-save-${linkId}`);
+          saveBtn.disabled = true;
+          saveBtn.textContent = "⏳ Saving...";
+
+          const { error } = await supabase
+            .from("social_media_links")
+            .update({
+              url: url || null,
+              updated_at: new Date().toISOString(),
+              updated_by: currentUser.id,
+            })
+            .eq("id", linkId);
+
+          if (error) throw error;
+
+          NotificationManager.success("✅ Link saved successfully");
+
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = "💾 Saved!";
+          setTimeout(() => {
+            saveBtn.innerHTML = "💾 Save URL";
+          }, 2000);
+
+          await loadAuditLog();
+        } catch (error) {
+          NotificationManager.error("❌ Error saving link: " + error.message);
+          document.querySelector(`.link-save-${linkId}`).disabled = false;
+          document.querySelector(`.link-save-${linkId}`).innerHTML =
+            "💾 Save URL";
+        }
+      }
+
+      async function toggleLinkStatus(linkId, isActive) {
+        try {
+          const { error } = await supabase
+            .from("social_media_links")
+            .update({
+              active: isActive,
+              updated_at: new Date().toISOString(),
+              updated_by: currentUser.id,
+            })
+            .eq("id", linkId);
+
+          if (error) throw error;
+
+          NotificationManager.success(
+            `✅ Link ${isActive ? "activated" : "deactivated"}`
+          );
+
+          await loadAuditLog();
+        } catch (error) {
+          NotificationManager.error(
+            "❌ Error updating link status: " + error.message
+          );
+        }
+      }
+
+      async function loadAuditLog() {
+        try {
+          const { data: logs, error } = await supabase
+            .from("social_media_audit_log")
+            .select("*")
+            .order("created_at", { ascending: false })
+            .limit(10);
+
+          if (error) throw error;
+
+          if (logs && logs.length > 0) {
+            document.getElementById("auditSection").style.display = "block";
+            renderAuditLog(logs);
+          }
+        } catch (error) {
+          console.error("Error loading audit log:", error);
+        }
+      }
+
+      function renderAuditLog(logs) {
+        const container = document.getElementById("auditLogContainer");
+
+        const table = `
+                <table class="audit-log-table">
+                    <thead>
+                        <tr>
+                            <th>Platform</th>
+                            <th>Action</th>
+                            <th>Admin</th>
+                            <th>Date & Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${logs
+                          .map(
+                            (log) => `
+                            <tr>
+                                <td>${escapeHtml(
+                                  JSON.parse(log.new_value || "{}").platform ||
+                                    "N/A"
+                                )}</td>
+                                <td><span class="action-badge action-${log.action.toLowerCase()}">${
+                              log.action
+                            }</span></td>
+                                <td>${escapeHtml(
+                                  log.admin_id
+                                    ? log.admin_id.substring(0, 8)
+                                    : "Unknown"
+                                )}</td>
+                                <td>${new Date(
+                                  log.created_at
+                                ).toLocaleString()}</td>
+                            </tr>
+                        `
+                          )
+                          .join("")}
+                    </tbody>
+                </table>
+            `;
+
+        container.innerHTML = table;
+      }
+
+      function isValidUrl(string) {
+        try {
+          new URL(string);
+          return true;
+        } catch (_) {
+          return false;
+        }
+      }
+
+      function escapeHtml(text) {
+        const map = {
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#039;",
+        };
+        return text.replace(/[&<>"']/g, (m) => map[m]);
+      }
+
+      function initUI() {
+        // Dark mode
+        document.getElementById("themeToggle").addEventListener("click", () => {
+          const isDark = document.body.classList.toggle("dark-theme");
+          localStorage.setItem("darkMode", isDark);
+          document.getElementById("themeToggle").textContent = isDark
+            ? "☀️"
+            : "🌙";
+        });
+
+        // Load dark mode preference
+        if (localStorage.getItem("darkMode") === "true") {
+          document.body.classList.add("dark-theme");
+          document.getElementById("themeToggle").textContent = "☀️";
+        }
+      }
+    </script>
+  </body>
+</html>

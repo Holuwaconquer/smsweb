@@ -63,7 +63,10 @@ async function checkMaintenanceMode() {
       .select("*")
       .single();
 
-    if (error) return false;
+    if (error) {
+      console.log("⚠️ Could not check maintenance mode (this is OK)");
+      return false;
+    }
 
     if (data && data.maintenance_mode) {
       // Check if current user is admin (admins bypass maintenance)
@@ -91,7 +94,7 @@ async function checkMaintenanceMode() {
     }
     return false;
   } catch (error) {
-    console.error("Maintenance check error:", error);
+    console.log("⚠️ Maintenance check skipped (app will continue)");
     return false;
   }
 }
@@ -127,6 +130,43 @@ async function getAllProfiles() {
     return data || [];
   } catch (error) {
     console.error("Get profiles error:", error);
+    return [];
+  }
+}
+
+// Get all profiles for admin (bypasses RLS limit by checking admin status)
+async function getAllProfilesAsAdmin() {
+  try {
+    // First verify current user is admin
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", user.id)
+      .single();
+
+    if (profileError || !profile?.is_admin) {
+      console.error("User is not an admin");
+      return [];
+    }
+
+    // Now fetch all profiles since user is verified admin
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Get all profiles error:", error);
+      throw error;
+    }
+    return data || [];
+  } catch (error) {
+    console.error("Get all profiles as admin error:", error);
     return [];
   }
 }
@@ -655,17 +695,122 @@ function initializeUI() {
     logoutBtn.addEventListener("click", async (e) => {
       e.preventDefault();
 
-      if (confirm("Are you sure you want to log out?")) {
-        const result = await Auth.signOut();
-        if (result.success) {
-          window.location.href = "../index.html";
-        } else {
-          alert("Error logging out. Please try again.");
+      ConfirmationManager.show(
+        "Are you sure you want to log out?",
+        async () => {
+          const result = await Auth.signOut();
+          if (result.success) {
+            NotificationManager.success("Logged out successfully!");
+            setTimeout(() => {
+              window.location.href = "../index.html";
+            }, 1000);
+          } else {
+            NotificationManager.error("Error logging out. Please try again.");
+          }
         }
-      }
+      );
     });
   }
 }
+
+// ============================================
+// REALTIME INITIALIZATION
+// ============================================
+
+async function initializeRealtime(userId) {
+  try {
+    console.log("🔄 Attempting realtime subscriptions...");
+
+    // Subscribe to user's own data
+    realtimeManager.subscribeToProfile(userId);
+    realtimeManager.subscribeToWallet(userId);
+    realtimeManager.subscribeToTransactions(userId);
+    realtimeManager.subscribeToSmsNumbers(userId);
+    realtimeManager.subscribeToSocialMediaLinks();
+
+    if (!realtimeManager.enabled) {
+      console.log(
+        "⚠️ Realtime unavailable - app works with manual data refresh"
+      );
+      return;
+    }
+
+    // PROFILE: Listen for profile updates
+    realtimeManager.on("profile:update", async (profileData) => {
+      console.log("✨ Profile updated silently");
+      if (window.updateProfileDisplay) {
+        window.updateProfileDisplay(profileData);
+      }
+      if (window.refreshProfile) {
+        await window.refreshProfile();
+      }
+    });
+
+    // WALLET: Listen for wallet updates
+    realtimeManager.on("wallet:update", async (walletData) => {
+      console.log("✨ Wallet updated silently");
+      if (window.updateWalletDisplay) {
+        window.updateWalletDisplay(walletData);
+      }
+      if (window.refreshWallet) {
+        await window.refreshWallet();
+      }
+    });
+
+    // TRANSACTIONS: Listen for new transactions
+    realtimeManager.on("transaction:new", async (transactionData) => {
+      console.log("✨ New transaction silently added");
+      if (window.addTransactionToList) {
+        window.addTransactionToList(transactionData);
+      }
+      if (window.refreshTransactions) {
+        await window.refreshTransactions();
+      }
+    });
+
+    // SMS NUMBERS: Listen for new SMS numbers
+    realtimeManager.on("sms:new", async (smsData) => {
+      console.log("✨ New SMS number silently added");
+      if (window.addSmsNumberToList) {
+        window.addSmsNumberToList(smsData);
+      }
+      if (window.loadActiveNumbers) {
+        await window.loadActiveNumbers();
+      }
+    });
+
+    // SMS NUMBERS: Listen for deleted SMS numbers
+    realtimeManager.on("sms:deleted", async (smsData) => {
+      console.log("✨ SMS number silently removed");
+      if (window.removeSmsNumberFromList) {
+        window.removeSmsNumberFromList(smsData.id);
+      }
+      if (window.loadActiveNumbers) {
+        await window.loadActiveNumbers();
+      }
+    });
+
+    // SOCIAL MEDIA LINKS: Listen for updates
+    realtimeManager.on("social-media:update", async (linkData) => {
+      console.log("✨ Social media links updated silently");
+      if (window.loadSocialLinks) {
+        await window.loadSocialLinks();
+      }
+    });
+
+    console.log("✅ Realtime subscriptions initialized");
+  } catch (error) {
+    console.log(
+      "⚠️ Realtime setup skipped - app will work without live updates"
+    );
+  }
+}
+
+// Cleanup on page unload
+window.addEventListener("beforeunload", () => {
+  console.log("🔌 Cleaning up realtime subscriptions");
+  realtimeManager.unsubscribeAll();
+});
 
 // Update time display
 function updateTime() {
@@ -683,10 +828,12 @@ window.addEventListener("resize", () => {
   const sidebar = document.getElementById("sidebar");
   const hamburger = document.getElementById("hamburger");
 
-  if (window.innerWidth > 768) {
-    sidebar.classList.remove("hidden");
-    hamburger.classList.remove("active");
-  } else {
-    sidebar.classList.remove("active");
+  if (sidebar && hamburger) {
+    if (window.innerWidth > 768) {
+      sidebar.classList.remove("hidden");
+      hamburger.classList.remove("active");
+    } else {
+      sidebar.classList.remove("active");
+    }
   }
 });
